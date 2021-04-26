@@ -1,0 +1,586 @@
+---
+title: "Initial Project Code"
+author: "Sarah Brashear"
+date: "4/9/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+library(tidyverse)
+library(rstanarm)
+library(tidycensus)
+library(ggthemes)
+library(gt)
+library(gtsummary)
+library(patchwork)
+library(ggdist)
+
+
+```
+
+```{r}
+
+
+covariates <- read_csv("SEDA_App/raw_data/seda_cov_geodist_poolyr_4.0.csv",
+                       col_types = cols(
+                          .default = col_double(),
+                          sedaleanm = col_character(),
+                          locale = col_character(),
+                          gslo = col_character()
+                        ))
+
+data <- read_csv("SEDA_App/raw_data/SEDA19.csv",
+                 col_types = cols(
+                      leaid = col_double(),
+                      leanm = col_character(),
+                      stateabb = col_character(),
+                      mn_asmts = col_double(),
+                      meanavg = col_double(),
+                      sesavgall = col_double(),
+                      fips = col_character(),
+                      tot_asmts = col_double(),
+                      cellcount = col_double(),
+                      mn_grd_eb = col_double(),
+                      mn_coh_eb = col_double(),
+                      mn_mth_eb = col_double()
+                    )
+                    )
+```
+
+
+```{r}
+
+
+cov_vars <- covariates %>%
+  filter(year == "2018") %>%
+  select(sedalea, perind, perasn, perhsp, perblk, perwht,
+         perell, perspeced, totenrl) %>%
+  rename(leaid = sedalea)
+
+
+model_data <- inner_join(data, cov_vars, by = "leaid")
+```
+
+```{r}
+
+# Fit one considers for racial demographics
+
+fit_1 <- stan_glm(meanavg ~ sesavgall + sesavgall*perind + sesavgall*perasn +
+                    sesavgall*perhsp + sesavgall*perblk + sesavgall*perwht, 
+                  data = model_data, 
+                  seed = 28,
+                  refresh = 0)
+
+```
+
+
+```{r}
+
+# Fit two considers non-racial or economic demographics - percent that are 
+# English language learners, special ed, and the size of the school district
+
+fit_2 <- stan_glm(meanavg ~ sesavgall + sesavgall*perell + sesavgall*perspeced, 
+                  data = model_data, 
+                  seed = 28,
+                  refresh = 0)
+
+```
+
+```{r}
+print(fit_2, digits = 3)
+```
+
+```{r}
+tbl_regression(fit_2, 
+               intercept = TRUE, 
+               estimate_fun = function(x) style_sigfig(x, digits = 3)) %>%
+  as_gt() %>%
+    tab_header(title = "Student Achievement Based on SES", 
+               subtitle = "How Treatment Assignment and Voting History Predict Likelihood of Voting") %>%
+    tab_source_note(md("SEDA")) %>% 
+  cols_label(estimate = md("**Parameter**"))
+```
+
+
+
+```{r}
+
+fit_3 <- stan_glm(meanavg ~ sesavgall*stateabb, 
+                  data = model_data, 
+                  seed = 28,
+                  refresh = 0)
+
+```
+
+
+```{r}
+
+# comparing the models 
+
+loo_fit_1 <- loo(fit_1) 
+# loo_fit_1 has elpd_loo of -10860.7 with SE of 91.8
+
+
+loo_fit_2 <- loo(fit_2) 
+# loo_fit_2 has elpd_loo of -8817.3 with SE of 84.3
+
+loo_fit_3 <- loo(fit_3) 
+
+loo_compare(loo_fit_1, loo_fit_2)
+
+
+```
+
+
+```{r}
+print(fit_2, digits = 3)
+```
+
+
+```{r}
+
+
+new_obs_test <- tibble(sesavgall = 0.2053,
+                       perell = .1,
+                       perspeced = .01,
+                       totenrl = 20000)
+
+pe_all <- posterior_epred(fit_2, newdata = new_obs_test) %>% 
+  as_tibble() %>%
+  mutate_all(as.numeric) 
+
+
+pe_all %>%
+  ggplot(aes(x = `1`,
+             alpha = .9)) +
+    geom_histogram(aes(y = after_stat(count/sum(count))),
+                   bins = 100)  +
+    scale_fill_manual(values = c('royalblue4', 'chartreuse4', "#FC4E07")) +
+    labs(title = "Posterior for Student Achievement in Districts with Average SES",
+         subtitle = "",
+         x = "Expected Student Achievement",
+         y = "Probability") +
+    scale_y_continuous(labels = scales::percent_format()) +
+    theme_classic() +
+    theme(legend.position = "none")
+
+```
+
+
+
+Thinking of looking at SES and student achievement
+I have every county in US, every year 2009-2018, every grade 3-8th, math and ELA
+
+
+```{r}
+
+summary(data$sesavgall)
+
+# This is the county's mean student achievement:
+summary(seda$cs_mn_all)
+summary(data$sesavgall)
+
+seda %>%
+  select(stateabb, sedacounty, sedacountyname, subject, grade, year, cs_mn_all) %>%
+  drop_na(cs_mn_all)
+
+# This is the county's SES:
+summary(covariates$sesall)
+
+```
+
+## Describing the data:
+meanavg: “Mean pooled grade scale: A one-unit difference in this grade-equivalent unit scale is interpretable as equivalent to the average difference in skills between students one grade level apart in school...”
+
+sesavgall: “For GSDs, counties and metros, we use data from the ACS to construct measures of median family income, proportion of adults with a bachelor’s degree or higher, proportion of adults that are unemployed, the household poverty rate, the proportion of households receiving SNAP benefits, and the proportion of households with children that are headed by a single mother.We also combine these measures to construct a single socioeconomic status composite...”
+
+## Potential Questions:
+Is demography destiny? 
+We know that socioeconomic status is correlated with student achievement. But 
+does it determine outcomes? 
+
+For a district with low, average, and high SES, what might their student 
+achievement look like?
+
+
+```{r}
+tx_data <- data %>%
+  filter(stateabb == "TX") 
+
+data %>%
+  filter(stateabb == "TX") %>%
+  drop_na(sesavgall, meanavg) %>%
+  ggplot(aes(x = sesavgall, 
+             y = meanavg,
+             size = tot_asmts,
+             # color = ifelse(stateabb == "CA", "blue", "black")
+             )) +
+  geom_point(alpha = .4,
+             color = 'royalblue4') +
+  geom_hline(yintercept = 5, linetype = "dashed") +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 3), color = "grey15", se = FALSE) +
+  labs(title = "Correlation Between SES and Academic Acheivement",
+       subtitle = "Each Bubble is a Public School District",
+       x = "Average Family Socioeconomic Status",
+       y = "Average Student Achievement of 5th Graders",
+       caption = "Source: Stanford Educational Data Archive (SEDA)") +
+  theme_classic() +
+  theme(legend.position = "none") +
+  scale_size_continuous(range = c(1, 10))
+
+
+  geom_point(data = tx_data,
+             aes(x = sesavgall,
+                 y = meanavg),
+             color = 'blue',
+             alpha = .5) 
+    
+                # color=ifelse(stateabb == "CA", 'red', 'blue')))
+
+ca_data <- data %>%
+  filter(stateabb == "CA")
+
+ma_data <- data %>%
+  filter(stateabb == "MA")
+```
+
+```{r}
+tx_md <- model_data %>%
+  filter(stateabb == "TX")
+
+ca_md <- model_data %>%
+  filter(stateabb == "CA")
+
+ma_md <- model_data %>%
+  filter(stateabb == "MA")
+```
+
+
+```{r}
+tbl_regression(fit_tx, 
+               intercept = TRUE, 
+               estimate_fun = function(x) style_sigfig(x, digits = 3)) %>%
+  as_gt() %>%
+    tab_header(title = "Student Achievement Based on SES in Texas", 
+               subtitle = "Texas School Districts Fall Near Middle of 50 States") %>%
+    tab_source_note(md("Source: Stanford Educational Data Archive (SEDA)")) %>% 
+  cols_label(estimate = md("**Parameter**"))
+```
+
+```{r}
+tbl_regression(fit_ma, 
+               intercept = TRUE, 
+               estimate_fun = function(x) style_sigfig(x, digits = 3)) %>%
+  as_gt() %>%
+    tab_header(title = "Student Achievement Based on SES in Massachusetts", 
+               subtitle = "Massachusetts School Districts Outperform Most Other States") %>%
+    tab_source_note(md("Source: Stanford Educational Data Archive (SEDA)")) %>% 
+  cols_label(estimate = md("**Parameter**"))
+```
+
+```{r}
+tbl_regression(fit_ca, 
+               intercept = TRUE, 
+               estimate_fun = function(x) style_sigfig(x, digits = 3)) %>%
+  as_gt() %>%
+    tab_header(title = "Student Achievement Based on SES in California", 
+               subtitle = "California School Districts Tend to Underperform") %>%
+    tab_source_note(md("Source: Stanford Educational Data Archive (SEDA)")) %>% 
+  cols_label(estimate = md("**Parameter**"))
+```
+
+
+```{r}
+fit_tx <- stan_glm(meanavg ~ sesavgall + sesavgall*perell + sesavgall*perspeced, 
+                  data = tx_md, 
+                  seed = 28,
+                  refresh = 0)
+```
+
+
+$freedom_i = \\beta_0 + \\beta_1agreement_i + 
+                        \\beta_2Male_i + \\beta_3agreement_i*Gender_1 +
+                           \\epsilon_i$')
+                           
+$meanavg_i=\beta_0 + \beta_1 sesavgall_i + \beta_2 sesavgall_i * perell_i + \beta_3 sesavgall_i * perspeced_i + \varepsilon_i $
+
+
+
+```{r}
+fit_ca <- stan_glm(meanavg ~ sesavgall + sesavgall*perell + sesavgall*perspeced, 
+                  data = ca_md, 
+                  seed = 28,
+                  refresh = 0)
+```
+
+```{r}
+fit_ma <- stan_glm(meanavg ~ sesavgall + sesavgall*perell + sesavgall*perspeced, 
+                  data = ma_md, 
+                  seed = 28,
+                  refresh = 0)
+```
+
+```{r}
+model_data %>%
+  ggplot(aes(x = perspeced)) +
+  geom_histogram()
+```
+
+
+```{r}
+# This is modeling achievement for districts with low SES only
+
+new_obs_low <- tibble(sesavgall = -0.3082,
+                      perell = .1,
+                      perspeced = .1
+                    )
+
+pe1_tx <- posterior_epred(fit_tx, newdata = new_obs_low) %>% 
+  as_tibble() %>%
+  mutate_all(as.numeric) 
+
+pe1_ca <- posterior_epred(fit_ca, newdata = new_obs_low) %>% 
+  as_tibble() %>%
+  mutate_all(as.numeric) 
+
+pe1_ma <- posterior_epred(fit_ma, newdata = new_obs_low) %>% 
+  as_tibble() %>%
+  mutate_all(as.numeric) 
+```
+
+```{r}
+
+Texas_Low <- pe1_tx$`1`
+California_Low <- pe1_ca$`1`
+Massachusetts_Low <- pe1_ma$`1`
+
+plot_data_1 <- tibble(Texas_Low, California_Low, Massachusetts_Low) 
+
+low_ses_plot <- plot_data_1 %>% 
+  pivot_longer(cols = `Texas_Low`:`Massachusetts_Low`,
+               names_to = "state",
+               values_to = "achievement") %>%
+  ggplot(aes(x = achievement, 
+             fill = state,
+             alpha = .9)) +
+    geom_histogram(aes(y = after_stat(count/sum(count))),
+                   bins = 300)  +
+    scale_fill_manual(values = c('royalblue4', 'chartreuse4', "#FC4E07")) +
+    labs(title = "Posterior for Student Achievement in School Districts with Low SES",
+         subtitle = "California underperforms while Massachusetts overperforms",
+         x = "Expected Student Achievement for 5th Graders",
+         y = "Probability") +
+    scale_y_continuous(labels = scales::percent_format()) +
+    theme_classic() +
+    theme(legend.position = "none")
+
+```
+```{r}
+
+write_rds(low_ses_plot, "SEDA_App/low_ses_plot.rds")
+
+ggsave("img01.png", plot = last_plot())
+
+```
+
+
+
+```{r} 
+
+# This is modeling achievement for districts with average SES only
+
+new_obs_mean <- tibble(sesavgall = 0.2053,
+                      perell = .1,
+                      perspeced = .1
+                    )
+
+pe2_tx <- posterior_epred(fit_tx, newdata = new_obs_mean) %>% 
+  as_tibble() %>%
+  mutate_all(as.numeric) 
+
+pe2_ca <- posterior_epred(fit_ca, newdata = new_obs_mean) %>% 
+  as_tibble() %>%
+  mutate_all(as.numeric) 
+
+pe2_ma <- posterior_epred(fit_ma, newdata = new_obs_mean) %>% 
+  as_tibble() %>%
+  mutate_all(as.numeric) 
+```
+
+```{r}
+# Plot for average SES across the three districts
+
+Texas_Mean <- pe2_tx$`1`
+California_Mean <- pe2_ca$`1`
+Massachusetts_Mean <- pe2_ma$`1`
+
+plot_data_2 <- tibble(Texas_Mean, California_Mean, Massachusetts_Mean) 
+
+mean_ses_plot <- plot_data_2 %>% 
+  pivot_longer(cols = `Texas_Mean`:`Massachusetts_Mean`,
+               names_to = "state",
+               values_to = "achievement") %>%
+  ggplot(aes(x = achievement, 
+             fill = state,
+             alpha = .9)) +
+    geom_histogram(aes(y = after_stat(count/sum(count))),
+                   bins = 300)  +
+    scale_fill_manual(values = c('royalblue4', 'chartreuse4', "#FC4E07")) +
+    labs(title = "Posterior for Student Achievement in School Districts with Average SES",
+         subtitle = "The gaps between states are wider here than in Low SES Model",
+         x = "Expected Student Achievement for 5th Graders",
+         y = "Probability") +
+    scale_y_continuous(labels = scales::percent_format()) +
+    theme_classic() +
+    theme(legend.position = "none")
+  
+```
+
+
+
+
+
+```{r} 
+
+# This is modeling achievement for districts with high SES only
+
+new_obs_high <- tibble(sesavgall = 0.7831,
+                      perell = .1,
+                      perspeced = .1)
+
+pe3_tx <- posterior_epred(fit_tx, newdata = new_obs_high) %>% 
+  as_tibble() %>%
+  mutate_all(as.numeric) 
+
+pe3_ca <- posterior_epred(fit_ca, newdata = new_obs_high) %>% 
+  as_tibble() %>%
+  mutate_all(as.numeric) 
+
+pe3_ma <- posterior_epred(fit_ma, newdata = new_obs_high) %>% 
+  as_tibble() %>%
+  mutate_all(as.numeric) 
+```
+
+```{r}
+# Plot for high SES across the three districts
+
+Texas_High <- pe3_tx$`1`
+California_High <- pe3_ca$`1`
+Massachusetts_High <- pe3_ma$`1`
+
+plot_data_3 <- tibble(Texas_High, California_High, Massachusetts_High) 
+
+high_ses_plot <- plot_data_3 %>% 
+  pivot_longer(cols = `Texas_High`:`Massachusetts_High`,
+               names_to = "state",
+               values_to = "achievement") %>%
+  ggplot(aes(x = achievement, 
+             fill = state,
+             alpha = .9)) +
+    geom_histogram(aes(y = after_stat(count/sum(count))),
+                   bins = 300)  +
+    scale_fill_manual(values = c('royalblue4', 'chartreuse4', "#FC4E07")) + 
+    labs(title = "Posterior for Student Achievement in Districts with High SES",
+         subtitle = "Massachusetts overperforms by largest margin",
+         x = "Expected Student Achievement for 5th Graders",
+         y = "Probability") +
+    scale_y_continuous(labels = scales::percent_format()) +
+    theme_classic() +
+    theme(legend.position = "none")
+  
+```
+
+
+
+
+```{r}
+
+master_plot_data <- tibble(plot_data_1, plot_data_2, plot_data_3)
+
+final_thing <- master_plot_data %>%
+  pivot_longer(names_to = "state",
+               values_to = "values",
+               cols = `Texas_Low`:`Massachusetts_High`) %>%
+  mutate(SES = ifelse(state %in% "Low", "Low", "Not Low"
+                      ))
+
+final_thing %>%
+ ggplot(aes(x = values, 
+             y = as.character(type))) +
+    
+    stat_slab(alpha = 0.5) +
+    labs(title = "Voting Probability by Age and Treatment",
+         subtitle = "Focus on Democratic Females who are Municipal Primary Voters", 
+         x = "Probability of Voting",
+         y = "Age Bin") +
+  scale_x_continuous(labels = scales::number_format()) +
+  theme_classic()
+
+```
+
+
+```{r}
+# using patchwork - don't love how this looks though
+
+low_ses_plot + mean_ses_plot + high_ses_plot +
+    plot_annotation(
+    title = "Posterior Distribution of the Expected Value of the Change in 
+    Proportion of Registered Voters",
+    subtitle = "Survey of a 2013 Kenyan Voter Registration Experiment
+    \"local + SMS\" treatment shown:",
+    caption = "Source: Kenya Voter Registration Experiment")
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Mapz
+```{r, school_district_map}
+
+# Example map using Census Geometry!! Using nonsense variables though.
+# ACS data differ from decennial Census data as they are based on an annual sample of approximately 3 million households, rather than a more complete enumeration of the US population. In turn, ACS data points are estimates characterized by a margin of error. tidycensus will always return the estimate and margin of error together for any requested variables when using get_acs().
+
+states <- c("MA", "TX")
+
+map <- get_acs(geography = "school district (unified)",
+               state = "CA",
+               variables = c("B06009_001", "B06009_006"),
+               year = 2019,
+               output = "wide",
+               geometry = TRUE)
+
+
+map %>%
+  as.tibble()
+  mutate(Percent = 100 * (B06009_006 / B06009_001)) %>%
+  ggplot(aes(fill = Percent, color = Percent)) +
+  geom_sf() 
+  
+# saveRDS(map, "middlesex.rds")
+
+
+```
+
+```{r}
+countymap <- get_acs(geography = "",
+               state = "TX",
+               variables = c("B06009_001", "B06009_006"),
+               year = 2019,
+               output = "wide",
+               geometry = TRUE)
+```
+
+
