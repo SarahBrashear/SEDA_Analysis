@@ -156,11 +156,11 @@ pe_all %>%
   ggplot(aes(x = `1`,
              alpha = .9)) +
     geom_histogram(aes(y = after_stat(count/sum(count))),
-                   bins = 100)  +
-    scale_fill_manual(values = c('royalblue4', 'chartreuse4', "#FC4E07")) +
-    labs(title = "Posterior for Student Achievement in Districts with Average SES",
-         subtitle = "",
-         x = "Expected Student Achievement",
+                   bins = 100,
+                   fill = 'royalblue4')  +
+    labs(title = "Predicted Student Achievement for the Average School District",
+         subtitle = "Districts very likely to achieve slightly above grade-level",
+         x = "Expected Student Achievement for a 5th Grader",
          y = "Probability") +
     scale_y_continuous(labels = scales::percent_format()) +
     theme_classic() +
@@ -212,6 +212,8 @@ tx_data <- data %>%
 data %>%
   filter(stateabb == "TX") %>%
   drop_na(sesavgall, meanavg) %>%
+  
+  
   ggplot(aes(x = sesavgall, 
              y = meanavg,
              size = tot_asmts,
@@ -359,12 +361,14 @@ Massachusetts_Low <- pe1_ma$`1`
 plot_data_1 <- tibble(Texas_Low, California_Low, Massachusetts_Low) 
 
 low_ses_plot <- plot_data_1 %>% 
-  pivot_longer(cols = `Texas_Low`:`Massachusetts_Low`,
+  rename(Texas = Texas_Low,
+         California = California_Low,
+         Massachusetts = Massachusetts_Low) %>%
+  pivot_longer(cols = `Texas`:`Massachusetts`,
                names_to = "state",
                values_to = "achievement") %>%
   ggplot(aes(x = achievement, 
-             fill = state,
-             alpha = .9)) +
+             fill = state)) +
     geom_histogram(aes(y = after_stat(count/sum(count))),
                    bins = 300)  +
     scale_fill_manual(values = c('royalblue4', 'chartreuse4', "#FC4E07")) +
@@ -374,9 +378,11 @@ low_ses_plot <- plot_data_1 %>%
          y = "Probability") +
     scale_y_continuous(labels = scales::percent_format()) +
     theme_classic() +
-    theme(legend.position = "none")
+    theme(legend.position = "bottom")
 
 ```
+
+
 ```{r}
 
 write_rds(low_ses_plot, "SEDA_App/low_ses_plot.rds")
@@ -419,12 +425,14 @@ Massachusetts_Mean <- pe2_ma$`1`
 plot_data_2 <- tibble(Texas_Mean, California_Mean, Massachusetts_Mean) 
 
 mean_ses_plot <- plot_data_2 %>% 
-  pivot_longer(cols = `Texas_Mean`:`Massachusetts_Mean`,
+    rename(Texas = Texas_Mean,
+         California = California_Mean,
+         Massachusetts = Massachusetts_Mean) %>%
+  pivot_longer(cols = `Texas`:`Massachusetts`,
                names_to = "state",
                values_to = "achievement") %>%
   ggplot(aes(x = achievement, 
-             fill = state,
-             alpha = .9)) +
+             fill = state)) +
     geom_histogram(aes(y = after_stat(count/sum(count))),
                    bins = 300)  +
     scale_fill_manual(values = c('royalblue4', 'chartreuse4', "#FC4E07")) +
@@ -434,7 +442,7 @@ mean_ses_plot <- plot_data_2 %>%
          y = "Probability") +
     scale_y_continuous(labels = scales::percent_format()) +
     theme_classic() +
-    theme(legend.position = "none")
+    theme(legend.position = "bottom")
   
 ```
 
@@ -473,12 +481,14 @@ Massachusetts_High <- pe3_ma$`1`
 plot_data_3 <- tibble(Texas_High, California_High, Massachusetts_High) 
 
 high_ses_plot <- plot_data_3 %>% 
-  pivot_longer(cols = `Texas_High`:`Massachusetts_High`,
+    rename(Texas = Texas_High,
+         California = California_High,
+         Massachusetts = Massachusetts_High) %>%
+  pivot_longer(cols = `Texas`:`Massachusetts`,
                names_to = "state",
                values_to = "achievement") %>%
   ggplot(aes(x = achievement, 
-             fill = state,
-             alpha = .9)) +
+             fill = state)) +
     geom_histogram(aes(y = after_stat(count/sum(count))),
                    bins = 300)  +
     scale_fill_manual(values = c('royalblue4', 'chartreuse4', "#FC4E07")) + 
@@ -488,7 +498,7 @@ high_ses_plot <- plot_data_3 %>%
          y = "Probability") +
     scale_y_continuous(labels = scales::percent_format()) +
     theme_classic() +
-    theme(legend.position = "none")
+    theme(legend.position = "bottom")
   
 ```
 
