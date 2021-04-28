@@ -1,6 +1,27 @@
+
+# One of my goals was to keep this app as efficient and streamlined as possible
+# so that it would run quickly, so I did as much work as possible in a separate
+# Rmd file. Because of this, I don't need to library a bunch of packages here
+# But, here are some of the packages that I did play with during the project / 
+# analysis, but do not have to library within the app itself.
+
+# library(rstanarm)
+# library(tidycensus)
+# library(ggthemes)
+# library(gt)
+# library(gtsummary)
+# library(patchwork)
+# library(ggdist)
+
 library(tidyverse)
 library(shiny)
 library(shinythemes)
+
+# I also only have to read part of my data directly into the app. I had covariates
+# in a separate data table, but I don't need to call them in the actual app
+# because the interactive part of my app does not use them. They only show up
+# in the static images that I created in the separate Rmd file. This improves
+# the speed / efficiency of the app since the covariates file is pretty large.
 
 data <- read_csv("raw_data/SEDA19.csv",
                  col_types = cols(
@@ -19,29 +40,62 @@ data <- read_csv("raw_data/SEDA19.csv",
                  )
 )
 
+# Because this core portion of the SEDA data was already quite clean, I am 
+# loading it directly from the raw_data folder. Also, setting the col_types
+# avoids an error message.
+
 ###############################################################################
 ###############################################################################
 
-# Define UI for application that draws a histogram
+
 ui <- fluidPage(theme = shinytheme("sandstone"),
                 
+                # I found the Sandstone theme from a link Beau sent me during
+                # recitations. I also was inspired by a previous semester's 
+                # project that Jessica shared on Slack that used this theme
+                # with cool side panels.
+                
                 navbarPage("Student Achievement and SES in U.S. Public Schools",
+                           
                            tabPanel("Data",
                                     h1("How are student achievement and SES correlated in each state?"),
                                     p("Based on the Stanford Education Data Archive (SEDA)", 
                                       style = "font-size:20px;"),
+                                    
+                                    # I wish the titles didn't run off the edge
+                                    # but in previous PSets, teaching team has
+                                    # said that's okay because indendenting 
+                                    # causes an unwanted line break.
+                                    
                                     br(),
                                     
                                     # Main Panel
+                                    # This is where the interactive portion of 
+                                    # my app is.
+                                    
                                     mainPanel(
                                         selectInput(inputId = "selected_state",
                                                     label = "Choose a state",
                                                     choices = data$stateabb,
                                                     selected = "AL"),
                                         
+                                        # the 'selected' argument should control
+                                        # which state is displayed when you first
+                                        # load the app. Somehow it isn't working
+                                        # though. When the app runs, AL pops up
+                                        # for a second, and then it defaults to
+                                        # blank. If I revised/re-did this project,
+                                        # I would try to solve this. 
+                                        
+                                        
+                                        
                                         plotOutput("state_plot"),
                                         br(),
-                                        p("Select a state from the dropdown list above in order
+                                        
+                                        p("Select a state from the dropdown list
+                                        
+                                        
+                                        above in order
                               to see the relationship between student achievement
                               and socioeconomic status for each school district
                               in that state. Each bubble represents one public
@@ -260,33 +314,42 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                     mainPanel(
                                         h3("About the Project"),
                                         h4("Summary"),
-                                        p("This project explores the question of whether demography
-                              is destiny in American public school districts. I 
-                              started by examining the relationship between socio-economic
-                              status and student achievement for each of the roughly
-                              13,000 school districts in the country. I grouped districts
-                              by their states since the majority of education policy 
-                              decision-making happens at the state level. In each
-                              state, there is a positive correlation between SES 
-                              and student achievement; however, the magnitude of 
-                              correlations vary. I then built a predictive model
-                              that draws on all 450 million test scores from students
-                              in grades 3-8 from 2008-2018, that predicts that 
-                              5th graders from a typical school district will perform
-                              slightly above grade-level on future assessments 
-                              under a certain set of assumptions. Because I was 
-                              interested in the variance between states, I also 
-                              ran the same model on subsets of the data (a Texas
-                              model, a Califonia model, and a Massachusetts model)
-                              under three different sets of assumptions (low SES,
-                              average SES, and high SES). Ultimately the variance
-                              between these states could be used to inform policy
-                              decisions in the future as state education agencies 
-                              strategically allocate funding and support for  
-                              post-pandemic recovery.", 
-                                          strong(""), 
-                                          ""),
+                                        p("This project explores the question of 
+                                          whether demography is destiny in American 
+                                          public school districts. I started by 
+                                          examining the relationship between 
+                                          socio-economic status and student 
+                                          achievement for each of the roughly 
+                                          13,000 school districts in the country. 
+                                          I grouped districts by their states 
+                                          since the majority of education policy 
+                                          decision-making happens at the state 
+                                          level. In each state, there is a positive 
+                                          correlation between SES and student 
+                                          achievement; however, the magnitude of 
+                                          correlations vary. I then built a 
+                                          predictive model that draws on all 450 
+                                          million test scores from students in 
+                                          grades 3-8 from 2008-2018, that predicts 
+                                          that 5th graders from a typical school 
+                                          district will perform slightly above 
+                                          grade-level on future assessments under 
+                                          a certain set of assumptions. Because 
+                                          I was interested in the variance between 
+                                          states, I also ran the same model on 
+                                          subsets of the data (a Texas model, a 
+                                          Califonia model, and a Massachusetts 
+                                          model) under three different sets of 
+                                          assumptions (low SES, average SES, and 
+                                          high SES). Ultimately the variance 
+                                          between these states could be used to 
+                                          inform policy decisions in the future 
+                                          as state education agencies strategically 
+                                          allocate funding and support for post-pandemic 
+                                          recovery.", 
+
                                         br(),
+                                        
                                         h4("Limitations of This Analysis"),
                                         p("The main limitation of these models is that they
                               hope to answer questions about future academic 
@@ -342,7 +405,8 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                            )))
 
 
-# Define server logic required to draw a histogram
+# Define server logic
+
 server <- function(input, output) {
     
     output$state_plot <- renderPlot({
