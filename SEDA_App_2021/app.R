@@ -250,7 +250,8 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                            ),         
                            
                            
-                           ## Panel 3
+                           # Panel 3
+                           
                            tabPanel("Differences Between States",
                                     h1("How much does predicted achievement vary between states?"),
                                     p("Modeling Predicted Student Achievement in Three Prototypical States", 
@@ -310,6 +311,7 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                            
                            
                            # Panel 4
+                           
                            tabPanel("About",
                                     mainPanel(
                                         h3("About the Project"),
@@ -346,62 +348,79 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                           inform policy decisions in the future 
                                           as state education agencies strategically 
                                           allocate funding and support for post-pandemic 
-                                          recovery.", 
+                                          recovery."), 
 
                                         br(),
                                         
                                         h4("Limitations of This Analysis"),
-                                        p("The main limitation of these models is that they
-                              hope to answer questions about future academic 
-                              performance, and yet the Covid-19 pandemic has dramatically
-                              changed the learning experiences students had over
-                              the last year. In other words, I am concerned about
-                              the external validity of this data, since the learning
-                              conditions during the pandemic looked so different 
-                              from state to state, and district to district over 
-                              the last year.", 
-                                          strong(""), 
-                                          "Another limitation of this analysis is that my
-                              models use 5th grade test scores to represent student
-                              achievement for the school district. While the scores
-                              are averaged across several years, a stronger model
-                              may make use of more grade levels, or examine differences
-                              between grade levels or within grade levels, over
-                              time."),
+                                        p("The main limitation of these models is 
+                                          that they hope to answer questions 
+                                          about future academic performance, and 
+                                          yet the Covid-19 pandemic has dramatically
+                                          changed the learning experiences students 
+                                          had over the last year. In other words, 
+                                          I am concerned about the external 
+                                          validity of this data, since the learning
+                                          conditions during the pandemic looked 
+                                          so different from state to state, and 
+                                          district to district over the last year.
+                                          Another limitation of this analysis is 
+                                          that my models use 5th grade test scores 
+                                          to represent student achievement for 
+                                          the school district. While the scores
+                                          are averaged across several years, a 
+                                          stronger model may make use of more 
+                                          grade levels, or examine differences 
+                                          between grade levels or within grade 
+                                          levels, over time."),
+                                        
                                         br(),
+                                        
                                         h4("Data"),
-                                        p("I was inspired by my Harvard Graduate School of Education
-                            professor, Andrew Ho, to use the SEDA data for my analysis.
-                            I learned about this data set in his course, Intermediate 
-                            and Advanced Statistical Methods for Applied Education
-                            Research, and was excited by the opportunity to use
-                            it in my own original analysis for Gov 1005. The datasets 
-                            and the reproduceable code for this analysis can be 
-                            found in my", 
+                                        p("I was inspired by my Harvard Graduate 
+                                          School of Education professor, Andrew 
+                                          Ho, to use the SEDA data for my analysis.
+                                          I learned about this data set in his 
+                                          course, Intermediate and Advanced 
+                                          Statistical Methods for Applied Education
+                                          Research, and was excited by the 
+                                          opportunity to use it in my own original 
+                                          analysis for Gov 1005. The datasets and 
+                                          the reproduceable code for this analysis 
+                                          can be found in my", 
                                           a(href="https://github.com/SarahBrashear",
                                             "GitHub repository."), 
-                                          "For more information about the data itself, click
-                              the Data tab at the top of the page.")),
+                                          "For more information about the data 
+                                          itself, click the Data tab at the top 
+                                          of the page.")),
+                                    
+                                    # Here's the link to my Github repo, which 
+                                    # is one of the required components of the 
+                                    # project.
+                                    
                                     br(),
                                     br(),
                                     br(),
+                                    
                                     sidebarPanel(
-                                        img(src = "IMG_6688.JPG", height = "60%", width = "60%",
+                                        img(src = "IMG_6688.JPG", 
+                                            height = "60%", 
+                                            width = "60%",
                                             style = "display: block; margin-left: auto; margin-right: auto;"),
                                         h3("About Me"),
                                         h4("Sarah Brashear, Ed.M. Candidate"),
                                         h4("Harvard Graduate School of Education"),
                                         p("I am a master's student studying Education
-                                       Policy, with a focus in quantitative analysis.
-                                       As a former high school English teacher, 
-                                       I think of data analysis as another lens
-                                       through which to tell compelling stories.
-                                       After I leave Harvard this spring, I hope
-                                       to  use my analytical skills and knowledge 
-                                       of the US education landscape to improve
-                                       the lives of students on a much larger
-                                       scale than I could when my sphere of influence
-                                       stopped at my classroom doors."))
+                                          Policy. As a former high school English 
+                                          teacher, I think of data analysis as 
+                                          another language through which to tell 
+                                          compelling stories. After I leave Harvard 
+                                          this spring, I hope to  use my analytical 
+                                          skills and knowledge of the US education 
+                                          landscape to improve the lives of 
+                                          students on a much larger scale than I 
+                                          could when my sphere of influence 
+                                          stopped at my classroom doors."))
                            )))
 
 
