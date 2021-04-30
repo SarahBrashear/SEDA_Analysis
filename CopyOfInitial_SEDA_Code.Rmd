@@ -22,16 +22,25 @@ library(ggdist)
 
 ```{r}
 
+# Both datasets were downloaded from the SEDA website, linked in my app. The first
+# one, that I call "data" has an observation for each of the ~13,000 public school 
+# districts in the country. It contains identifying variables, like district
+# names and states, but the three most important for my analysis are:
 
-covariates <- read_csv("SEDA_App/raw_data/seda_cov_geodist_poolyr_4.0.csv",
-                       col_types = cols(
-                          .default = col_double(),
-                          sedaleanm = col_character(),
-                          locale = col_character(),
-                          gslo = col_character()
-                        ))
+# meanavg - the mean test score for 5th graders in the district (standardized so
+# that scores are comparable between districts and states, and reported in grade-level
+# increments. So 5 = knowledge & skills of a 5th grader, 6 = 6th grader, and so on)
 
-data <- read_csv("SEDA_App/raw_data/SEDA19.csv",
+# sesavgall - the average Socioeconomic Status of the school district (standardized,
+# so the national mean is 0, and each one unit difference is one standard deviation
+# difference)
+
+# tot_asmts - the total number of tested students in the district; essentially 
+# the total student enrollment of the district +/- a few students who opted out
+# of testing or were absent. I use this variable in one of my visualizations.
+
+
+data <- read_csv("SEDA_App_2021/raw_data/SEDA19.csv",
                  col_types = cols(
                       leaid = col_double(),
                       leanm = col_character(),
@@ -47,6 +56,18 @@ data <- read_csv("SEDA_App/raw_data/SEDA19.csv",
                       mn_mth_eb = col_double()
                     )
                     )
+
+# The covariates data below includes 10 years of data (from 2008-09 to 2017-18)
+# It also includes a ton of other variables for each district in each year, like
+# the racial demographics and various subgroups (numbers and percentages for each)
+
+covariates <- read_csv("SEDA_App_2021/raw_data/seda_cov_geodist_poolyr_4.0.csv",
+                       col_types = cols(
+                          .default = col_double(),
+                          sedaleanm = col_character(),
+                          locale = col_character(),
+                          gslo = col_character()
+                        ))
 ```
 
 
