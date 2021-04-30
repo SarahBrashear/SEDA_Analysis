@@ -1,7 +1,7 @@
 
 # One of my goals was to keep this app as efficient and streamlined as possible
 # so that it would run quickly, so I did as much work as possible in a separate
-# Rmd file. Because of this, I don't need to library a bunch of packages here
+# Rmd file. Because of this, I don't need to library a bunch of packages here.
 # But, here are some of the packages that I did play with during the project / 
 # analysis, but do not have to library within the app itself.
 
@@ -205,9 +205,9 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                       strong("predicted student achievement"),
                                       "for each school district in the nation, based 
                                       on socio-economic status. With a lens towards 
-                                      equity, I wanted to explore whether \"demography is destiny\" 
-                                      for students in U.S. public schools, or if 
-                                      students who are born into low-SES communities 
+                                      equity, I wanted to explore whether \"demography 
+                                      is destiny\" for students in U.S. public schools, 
+                                      or if students who are born into low-SES communities 
                                       are provided educational opportunities that 
                                       allow them to achieve as highly as their more 
                                       affluent peers. I decided to control for
@@ -277,81 +277,115 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                     
                                     br(),
                                     
-                                    p("Based on this model, we would expect 5th grade students 
-                          in an average school district in the United States to 
-                          perform slightly above grade level if they have average
-                          socio-economic status, and just 10% of students receive
-                          Special Education services, and 10% are English Language
-                          Learners. The plot below shows the range of potential 
-                          outcomes for student achievement. Since each unit represents
-                          one grade level (5 indicating mastery of knowledge and 
-                          skills on par with a 5th grader, 6 indicating 6th grade, 
-                          and so on), this model estimates that 5th graders are 
-                          very likely to perform between 5.37 and 5.47. While it
-                          is reassuring to see that America's 5th graders are 
-                          performing slightly above 5th grade-level, on average,
-                          this finding alone was not particularly insightful. The
-                          more I dug into the data, though, the more I realized 
-                          that there are wide discrepencies between the predicted
-                          achievement outcomes between different states. Click on
-                          the 'Differences Between States' tab to learn more.") 
+                                    p("Based on this model, we would expect 5th 
+                                      grade students in an average school district 
+                                      in the United States to perform slightly 
+                                      above grade level if they have average
+                                      socio-economic status, and just 10% of students 
+                                      receive Special Education services, and 10% 
+                                      are English Language Learners. The plot below 
+                                      shows the range of potential outcomes for 
+                                      student achievement. Since each unit represents
+                                      one grade level (5 indicating mastery of 
+                                      knowledge and skills on par with a 5th grader, 
+                                      6 indicating 6th grade, and so on), this 
+                                      model estimates that 5th graders are very 
+                                      likely to perform between 5.37 and 5.47. While 
+                                      it is reassuring to see that America's 5th 
+                                      graders are performing slightly above 5th 
+                                      grade-level, on average, this finding alone 
+                                      was not particularly insightful. The more 
+                                      I dug into the data, though, the more I realized 
+                                      that there are wide discrepencies between 
+                                      the predicted achievement outcomes between 
+                                      different states. Click on the 'Differences 
+                                      Between States' tab to learn more.") 
                                     
-                                    
+                                    # My biggest error when editing this app is
+                                    # having commas and parentheses slightly off
                                     
                            ),         
                            
                            
                            # Panel 3
-                           
                            tabPanel("Differences Between States",
-                                    h1("How much does predicted achievement vary between states?"),
-                                    p("Modeling Predicted Student Achievement in Three Prototypical States", 
+                                    h1("How much does predicted achievement vary 
+                                       between states?"),
+                                    p("Modeling Predicted Student Achievement in 
+                                      Three Prototypical States", 
                                       style = "font-size:20px;"),
                                     br(),
                                     
-                                    # Main Panel
                                     mainPanel(
-                                        p("The American education system runs on a long-standing
-                              tradition of local decision-making. While there are
-                              federal laws that impact the student experience, the
-                              vast majority of curriculum, policy, and funding decisions
-                              are left up to the states. Despite recent efforts 
-                              to align student learning objectives (such as the 
-                              Common Core curriculum, for example), educational 
-                              opportunity still varies significantly from state 
-                              to state. Because of this, the previous model, which
-                              makes predictions based on nation-wide data, is not
-                              necessarily the most informative for education leaders
-                              or policy-makers who are interested in improving 
-                              outcomes for students at the state-level. So, I extended 
-                              my analysis to explore how much variance there is 
-                              between states in terms of the relationship between 
-                              socio-economic status and student achievement.
-                              "),
+                                        p("The American education system runs on 
+                                          a long-standing tradition of local 
+                                          decision-making. While there are federal 
+                                          laws that impact the student experience, 
+                                          the vast majority of curriculum, policy, 
+                                          and funding decisions are left up to the 
+                                          states. Despite recent efforts to align 
+                                          student learning objectives (such as the 
+                                          Common Core curriculum, for example), 
+                                          educational opportunity still varies 
+                                          significantly from state to state. Because 
+                                          of this, the previous model, which
+                                          makes predictions based on nation-wide 
+                                          data, is not necessarily the most informative 
+                                          for education leaders or policy-makers 
+                                          who are interested in improving outcomes 
+                                          for students at the state-level. So, I 
+                                          extended my analysis to explore how much 
+                                          variance there is between states in terms 
+                                          of the relationship between socio-economic 
+                                          status and student achievement."),
+                                        
                                         br(),
                                         br(),
+                                        
+                                        # Again, loading in the images below
+                                        # from the www folder.
+                                        
                                         h4("Visualizing the Differences Between States"), 
                                         br(),
-                                        img(src = "low_ses_image.png", height = "80%", width = "80%",
-                                            style = "display: block; margin-left: auto; margin-right: auto;"),
+                                        img(src = "low_ses_image.png", 
+                                            height = "80%", 
+                                            width = "80%",
+                                            style = "display: block; margin-left: 
+                                            auto; margin-right: auto;"),
                                         br(),
-                                        img(src = "mean_ses_image.png", height = "80%", width = "80%",
-                                            style = "display: block; margin-left: auto; margin-right: auto;"),
+                                        img(src = "mean_ses_image.png", 
+                                            height = "80%", 
+                                            width = "80%",
+                                            style = "display: block; margin-left: 
+                                            auto; margin-right: auto;"),
                                         br(),
-                                        img(src = "high_ses_image.png", height = "80%", width = "80%",
-                                            style = "display: block; margin-left: auto; margin-right: auto;"),
+                                        img(src = "high_ses_image.png", 
+                                            height = "80%", 
+                                            width = "80%",
+                                            style = "display: block; margin-left: 
+                                            auto; margin-right: auto;"),
                                         p()),
                                     
                                     sidebarPanel(
-                                        p(strong("Regression Tables for State-Level Models"))),
+                                        p(strong("Regression Tables for State-Level 
+                                                 Models"))),
                                     br(),
                                     
-                                    img(src = "ca_table.png", height = "30%", width = "30%",
-                                        style = "display: block; margin-left: auto; margin-right: auto;"),
-                                    img(src = "tx_table.png", height = "32%", width = "32%",
-                                        style = "display: block; margin-left: auto; margin-right: auto;"),
-                                    img(src = "ma_table.png", height = "27%", width = "27%",
-                                        style = "display: block; margin-left: auto; margin-right: auto;")
+                                    img(src = "ca_table.png", 
+                                        height = "30%", 
+                                        width = "30%",
+                                        style = "display: block; margin-left: 
+                                        auto; margin-right: auto;"),
+                                    img(src = "tx_table.png", 
+                                        height = "32%", 
+                                        width = "32%",
+                                        style = "display: block; margin-left: 
+                                        auto; margin-right: auto;"),
+                                    img(src = "ma_table.png", 
+                                        height = "27%", 
+                                        width = "27%",
+                                        style = "display: block; margin-left: 
+                                        auto; margin-right: auto;")
                                     
                                     
                                     
@@ -479,6 +513,12 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
 
 server <- function(input, output) {
     
+    # This output is my interactive plot that's on the first tab of my app.
+    # You select the state from the drop down list, and then it spits out
+    # the ggplot with the data filtered for just that state.
+    # I kind of got lucky with this. I guessed that the filtering part would
+    # work, and then it did! On the first try!!
+    
     output$state_plot <- renderPlot({
         
         data %>%
@@ -493,8 +533,30 @@ server <- function(input, output) {
             )) +
             geom_point(alpha = .4,
                        color = 'royalblue4') +
+            
+            # The alpha value here is to make the dots more transparent since
+            # for some states there are a lot of dots that overlap. Solves the
+            # problem of "overplotting"
+            # I just picked this color because I thought it looked nice with 
+            # the Sandstone theme.
+            
             geom_hline(yintercept = 5, linetype = "dashed") +
-            geom_smooth(method = "lm", formula = y ~ poly(x, 3), color = "grey15", se = FALSE) +
+            
+            # The dashed line at y = 5 is a reference line. Since 5th graders
+            # should be performing at a 5th grade level, this shows that if a 
+            # dot is above the line, students in that district are achieving
+            # above grade-level, and vice versa if it's below the line.
+            
+            geom_smooth(method = "lm", 
+                        formula = y ~ poly(x, 3), 
+                        color = "grey15", 
+                        se = FALSE) +
+            
+            # This adds a curved line of best fit. I chose a curved line rather 
+            # than a straight line because in some states the relationship is
+            # very definitely NOT linear, though they are all positively 
+            # correlated.
+            
             labs(title = "Correlation Between SES and Academic Acheivement",
                  subtitle = "Each Bubble is a Public School District",
                  x = "Average Family Socioeconomic Status",
@@ -502,17 +564,18 @@ server <- function(input, output) {
                  caption = "Source: Stanford Educational Data Archive (SEDA)") +
             theme_classic() +
             theme(legend.position = "none") +
+            
+            # I hid the legend because I didn't need it to display the alpha
+            # value, and I had already explained that the size of the dot 
+            # represented the enrollment size of the district.
+            
             scale_size_continuous(range = c(1, 10))
         
         
         
     })
     
-    output$low_ses_image <- renderImage({ 
-        
-        readRDS("SEDA_App/low_ses_plot.rds")
-        
-    })
+   
 }
 
 # Run the application 
