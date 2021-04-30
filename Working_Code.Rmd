@@ -20,7 +20,7 @@ library(ggdist)
 
 ```
 
-```{r}
+```{r, load_data}
 
 # Both datasets were downloaded from the SEDA website, linked in my app. The first
 # one, that I call "data" has an observation for each of the ~13,000 public school 
@@ -71,18 +71,105 @@ covariates <- read_csv("SEDA_App_2021/raw_data/seda_cov_geodist_poolyr_4.0.csv",
 ```
 
 
-```{r}
-
+```{r, clean_data}
+# Since the covariates included 10 years but the data only included 2018, I 
+# filtered the covariates to match and then joined the data into one tibble
 
 cov_vars <- covariates %>%
   filter(year == "2018") %>%
   select(sedalea, perind, perasn, perhsp, perblk, perwht,
          perell, perspeced, totenrl) %>%
+  
+  # I selected only the covariates I was interested in exploring in my models
+  # because I knew if I kept them all, more districts may be dropped later
+  # when I joined the data
+  
   rename(leaid = sedalea)
 
 
 model_data <- inner_join(data, cov_vars, by = "leaid")
+
+# Down from 13,000 to 12,855 districts that had covariate data available for
+# 2018 that was reported and reliable. Not particularly concerned about this 
+# because it's only a drop of roughly 1%
+
 ```
+
+
+## Wisdom
+
+```{r, plot1}
+
+data %>%
+  
+# plotting directly from data rather than model_data since I don't need the 
+# covariates for this part, and it's more complete. Might as well include all
+# the districts if I can, rather than exclude the ones missing covariate data.
+  
+  drop_na(sesavgall, meanavg) %>%
+  ggplot(aes(x = sesavgall, 
+             y = meanavg,
+             size = tot_asmts)) +
+  geom_point(alpha = .4,
+             color = 'royalblue4') +
+  
+  # No matter how small I make the alpha, it's still way overplotted and hard
+  # to see what's going on with all the districts in the country plotted.
+  
+  geom_hline(yintercept = 5, linetype = "dashed") +
+  
+  # The horizontal line is a reference line since 5th graders should all be
+  # scoring at this level, regardless of SES in theory
+  
+  geom_smooth(method = "lm", formula = y ~ poly(x, 3), color = "grey15", se = FALSE) +
+  labs(title = "SES and Academic Acheivement for each School District",
+       subtitle = "There's a strong positive correlation, with a few outliers",
+       x = "Average Family Socioeconomic Status",
+       y = "Average Student Achievement of 5th Graders",
+       caption = "Source: Stanford Educational Data Archive (SEDA)") +
+  theme_classic() +
+  theme(legend.position = "none") +
+  scale_size_continuous(range = c(1, 10))
+
+# This plot tells us there's an obvious positive correlation between these 
+# two variables, but that's not surprising or particularly interesting on its own
+```
+
+```{r, plot2}
+
+# Since the plot for the whole US is too dense, I decided to make this the 
+# interactive part of my app. Testing out what it might look like for just
+# one state's data by filtering, though this will work slightly differently in
+# the app because the user will be able to choose a state from a dropdown list.
+
+data %>%
+  filter(stateabb == "TX") %>%
+  drop_na(sesavgall, meanavg) %>%
+  ggplot(aes(x = sesavgall, 
+             y = meanavg,
+             size = tot_asmts)) +
+  geom_point(alpha = .4,
+             color = 'royalblue4') +
+  geom_hline(yintercept = 5, linetype = "dashed") +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 3), color = "grey15", se = FALSE) +
+  labs(title = "Correlation Between SES and Academic Acheivement",
+       subtitle = "Each Bubble is a Public School District",
+       
+       # My title and subtitle have to be a little more generic since the code
+       # is generating the plot on the fly. Not sure how I could code in different
+       # titles for different states, but that might be worth exploring if I have
+       # time.
+       
+       x = "Average Family Socioeconomic Status",
+       y = "Average Student Achievement of 5th Graders",
+       caption = "Source: Stanford Educational Data Archive (SEDA)") +
+  theme_classic() +
+  theme(legend.position = "none") +
+  scale_size_continuous(range = c(1, 10))
+```
+
+
+
 
 ```{r}
 
@@ -108,22 +195,6 @@ fit_2 <- stan_glm(meanavg ~ sesavgall + sesavgall*perell + sesavgall*perspeced,
                   refresh = 0)
 
 ```
-
-```{r}
-print(fit_2, digits = 3)
-```
-
-```{r}
-tbl_regression(fit_2, 
-               intercept = TRUE, 
-               estimate_fun = function(x) style_sigfig(x, digits = 3)) %>%
-  as_gt() %>%
-    tab_header(title = "Student Achievement Based on SES", 
-               subtitle = "How Treatment Assignment and Voting History Predict Likelihood of Voting") %>%
-    tab_source_note(md("SEDA")) %>% 
-  cols_label(estimate = md("**Parameter**"))
-```
-
 
 
 ```{r}
@@ -155,9 +226,18 @@ loo_compare(loo_fit_1, loo_fit_2)
 ```
 
 
+
 ```{r}
-print(fit_2, digits = 3)
+tbl_regression(fit_2, 
+               intercept = TRUE, 
+               estimate_fun = function(x) style_sigfig(x, digits = 3)) %>%
+  as_gt() %>%
+    tab_header(title = "Student Achievement Based on SES", 
+               subtitle = "How Treatment Assignment and Voting History Predict Likelihood of Voting") %>%
+    tab_source_note(md("SEDA")) %>% 
+  cols_label(estimate = md("**Parameter**"))
 ```
+
 
 
 ```{r}
