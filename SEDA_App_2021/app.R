@@ -51,15 +51,18 @@ data <- read_csv("raw_data/SEDA19.csv",
 ui <- fluidPage(theme = shinytheme("sandstone"),
                 
                 # I found the Sandstone theme from a link Beau sent me during
-                # recitations. I also was inspired by a previous semester's 
+                # recitations. I was also inspired by a previous semester's 
                 # project that Jessica shared on Slack that used this theme
                 # with cool side panels.
                 
                 navbarPage("Student Achievement and SES in U.S. Public Schools",
                            
+                           # Panel 1
                            tabPanel("Data",
-                                    h1("How are student achievement and SES correlated in each state?"),
-                                    p("Based on the Stanford Education Data Archive (SEDA)", 
+                                    h1("How are student achievement and SES 
+                                       correlated in each state?"),
+                                    p("Based on the Stanford Education Data 
+                                      Archive (SEDA)", 
                                       style = "font-size:20px;"),
                                     
                                     # I wish the titles didn't run off the edge
@@ -93,71 +96,82 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                         br(),
                                         
                                         p("Select a state from the dropdown list
-                                        
-                                        
-                                        above in order
-                              to see the relationship between student achievement
-                              and socioeconomic status for each school district
-                              in that state. Each bubble represents one public
-                              school district, and the size of the district represents
-                              the number of students enrolled in the district. Along
-                              the X axis, you can see a school district's average
-                              socioeconomic status, with zero representing average
-                              SES. Along the Y axis, you see student achievement, 
-                              measured by the average test scores of
-                              5th graders in that district.")),
+                                          above in order to see the relationship 
+                                          between student achievement and 
+                                          socioeconomic status for each school 
+                                          district in that state. Each bubble 
+                                          represents one public school district, 
+                                          and the size of the district represents
+                                          the number of students enrolled in the 
+                                          district. Along the X axis, you can 
+                                          see a school district's average 
+                                          socioeconomic status, with zero 
+                                          representing average SES. Along the Y 
+                                          axis, you see student achievement, 
+                                          measured by the average test scores of
+                                          5th graders in that district.")),
                                     
                                     
                                     h2("About the Data"),
-                                    p("The Educational Opportunity Project at Stanford University
-                          collects and publishes ", 
+                                    p("The Educational Opportunity Project at 
+                                      Stanford University collects and publishes ", 
                                       a(href="https://edopportunity.org/", 
                                         "The Stanford Education Data Archive (SEDA),"), 
-                                      "which is the first national database of academic
-                          performance in all public school districts across the
-                          United States. Some of the covariates used in this analysis
-                          come from publically accessible files from the ",
+                                      "which is the first national database of 
+                                      academic performance in all public school 
+                                      districts across the United States. Some 
+                                      of the covariates used in this analysis
+                                      come from publically accessible files from 
+                                      the ",
                                       a(href="https://nces.ed.gov/",
                                         "Center for Education Statistics (NCES)"),
-                                      ". See below for more information on the main predictor
-                          and outcome variables used in this analysis."
-                                    ),
+                                      ". See below for more information on the 
+                                      main predictor and outcome variables used 
+                                      in this analysis."),
                                     
+                                    
+                                    # In the Sandstone theme, this creates a 
+                                    # cool, accented side bar on the right side
+                                    # that's a tan color.
                                     
                                     sidebarPanel(
-                                        h3(""),
                                         h4("Average Student Achievement"),
-                                        p("The data for this variable comes from the standardized
-                              accountability tests in math and Reading Language
-                              Arts that all public-school students in grades 3-8
-                              took from the 2008-09 school year through the 2017-18
-                              school year. In total, this comes out to roughly 
-                              450 million test scores. SEDA researchers use these
-                              scores along with information from the",
+                                        p("The data for this variable comes from 
+                                          the standardized accountability tests 
+                                          in math and Reading Language Arts that 
+                                          all public-school students in grades 3-8
+                                          took from the 2008-09 school year through 
+                                          the 2017-18 school year. In total, this 
+                                          comes out to roughly 450 million test 
+                                          scores. SEDA researchers use these
+                                          scores along with information from the",
                                           a(href="https://nces.ed.gov/nationsreportcard/",
-                                            "National Assessment of Educational Progress (NAEP)"),
-                                          "in order to calculate each school district's average 
-                              student achievement. Since this variable measures difference
-                              in",
+                                            "National Assessment of Educational 
+                                            Progress (NAEP)"),
+                                          "in order to calculate each school 
+                                          district's average student achievement. 
+                                          Since this variable measures difference
+                                          in",
                                           strong("average test scores,"),
-                                          "it can be interpreted as
-                              the educational opportunities available
-                              in a given school district." 
-                                        ),
+                                          "it can be interpreted as the educational 
+                                          opportunities available in a given school 
+                                          district."),
                                         h4("Average Family Socioeconomic Status"),
-                                        p("For each school district, SEDA researchers have 
-                              estimated average socioeconomic status (SES) 
-                              using data from the Census Bureau's ",
+                                        p("For each school district, SEDA researchers 
+                                          have estimated average socioeconomic status 
+                                          (SES) using data from the Census Bureau's ",
                                           a(href="https://www.census.gov/programs-surveys/acs",
                                             "American Community Survey (ACS)"),
-                                          ". The variable is a composite
-                              measure which includes median income, educational 
-                              attainment, poverty rate, SNAP benefits, single 
-                              mother households, and employment rate. The measure
-                              is also standardized, which means that the value of 
-                              zero represents the SES of the average school district
-                              in the U.S., and each one unit difference in SES 
-                              corresponds to one standard deviation difference.")
+                                          ". The variable is a composite measure 
+                                          which includes median income, educational 
+                                          attainment, poverty rate, SNAP benefits, 
+                                          single mother households, and employment 
+                                          rate. The measure is also standardized, 
+                                          which means that the value of zero represents 
+                                          the SES of the average school district
+                                          in the U.S., and each one unit difference 
+                                          in SES corresponds to one standard 
+                                          deviation difference.")
                                         
                                     )
                                     
@@ -166,53 +180,70 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                            
                            # Panel 2
                            tabPanel("The Model",
-                                    h2("How would we expect students in the \"typical\" school district to perform on future assessments?"),
+                                    h2("How would we expect students in the 
+                                       \"typical\" school district to perform on 
+                                       future assessments?"),
                                     p("Modeling Predicted Student Achievement", 
                                       style = "font-size:20px;"),
-                                    p("Public school districts vary dramatically in size, 
-                          location, student body demographics, and available funding. 
-                          All of these factors shape the learning outcomes of the 
-                          students who attend them. While no two school districts 
-                          are exactly the same, the SEDA data allows us to compare 
-                          student outcomes across time and place in order to better
-                          understand-and explain-the variance in student achievement.
-                          Now more than ever,as districts across the country prepare 
-                          for a post-pandemic educational landscape, it is imperative 
-                          that education leaders and policy-makers understand how 
-                          educational outcomes vary across the country."), 
+                                    p("Public school districts vary dramatically 
+                                      in size, location, student body demographics, 
+                                      and available funding. All of these factors 
+                                      shape the learning outcomes of the students 
+                                      who attend them. While no two school districts 
+                                      are exactly the same, the SEDA data allows 
+                                      us to compare student outcomes across time 
+                                      and place in order to better understand-and 
+                                      explain-the variance in student achievement.
+                                      Now more than ever,as districts across the 
+                                      country prepare for a post-pandemic educational 
+                                      landscape, it is imperative that education 
+                                      leaders and policy-makers understand how 
+                                      educational outcomes vary across the country."), 
                                     br(),
-                                    p("I designed a predictive model to explore the ", 
+                                    p("I designed a predictive model to explore 
+                                      the ", 
                                       strong("predicted student achievement"),
-                                      "for each school district in the nation, based on 
-                          socio-economic status. With a lens towards equity, I 
-                          wanted to explore whether \"demography is destiny\" for
-                          students in U.S. public schools, or if students who are
-                          born into low-SES communities are provided educational
-                          opportunities that allow them to achieve as highly as 
-                          their more affluent peers. I decided to control for
-                          the percentage of students who are English Language 
-                          Learners and the percentage of students who receive 
-                          special education services based on extensive literature
-                          that shows that traditional assessments do not accurately
-                          measure achievement outcomes for these groups of students.
-                          I also tested a few other models-one controlling for 
-                          racial differences between school districts, and one
-                          controlling for various component parts of the SES index,
-                          such as the percentage of students receiving free or
-                          reduced-price lunch (a proxy for parental income).
-                          Using the Loo Compare analysis, I found that the racial 
-                          demographic variables were not statistically significant.
-                          Further, the model that accounted for a districts' percentage
-                          of English Language Learners and students receiving special 
-                          education services was the strongest. It is illustrated 
-                          below."),
+                                      "for each school district in the nation, based 
+                                      on socio-economic status. With a lens towards 
+                                      equity, I wanted to explore whether \"demography is destiny\" 
+                                      for students in U.S. public schools, or if 
+                                      students who are born into low-SES communities 
+                                      are provided educational opportunities that 
+                                      allow them to achieve as highly as their more 
+                                      affluent peers. I decided to control for
+                                      the percentage of students who are English 
+                                      Language Learners and the percentage of students 
+                                      who receive special education services based 
+                                      on extensive literature that shows that 
+                                      traditional assessments do not accurately
+                                      measure achievement outcomes for these groups 
+                                      of students. I also tested a few other 
+                                      models-one controlling for racial differences 
+                                      between school districts, and one controlling 
+                                      for various component parts of the SES index,
+                                      such as the percentage of students receiving 
+                                      free or reduced-price lunch (a proxy for 
+                                      parental income). Using the Loo Compare analysis, 
+                                      I found that the racial demographic variables 
+                                      were not statistically significant. Further, 
+                                      the model that accounted for a districts' 
+                                      percentage of English Language Learners and 
+                                      students receiving special education services 
+                                      was the strongest. It is illustrated below."),
                                     
                                     
                                     br(),
                                     p(strong("Regression Model Equation:")),
-                                    withMathJax('$$ meanavg_i = \\beta_0 + \\beta_1sesavgall_i + 
-                        \\beta_2sesavgall_i*perell_i + \\beta_3sesavgall_i*perspeced_i +
-                           \\varepsilon_i $$'),
+                                    
+                                    # the withMathJax function is the easiest way
+                                    # to write equations in a shiny app. I learned
+                                    # about this from peers on Demo Day.
+                                    
+                                    withMathJax('$$ meanavg_i = \\beta_0 + 
+                                        \\beta_1sesavgall_i + 
+                                        \\beta_2sesavgall_i*perell_i + 
+                                        \\beta_3sesavgall_i*perspeced_i +
+                                        \\varepsilon_i $$'),
                                     
                                     br(),
                                     br(),
@@ -221,8 +252,28 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                       style = "font-size:20px;"),
                                     br(),
                                     
-                                    img(src = "posterior.png", height = "80%", width = "80%",
-                                        style = "display: block; margin-left: auto; margin-right: auto;"),
+                                    # Loading the full data into the
+                                    # app and running the regression, and then
+                                    # building the plot in the app would have 
+                                    # slowed it down significantly. Also, lots
+                                    # of classmates tried to use plotly and had
+                                    # issues with it. I opted to load in all my 
+                                    # posterior plots as static images, following
+                                    # the code from Beau's app as an example. 
+                                    
+                                    img(src = "posterior.png", 
+                                        height = "80%", 
+                                        width = "80%",
+                                        style = "display: block; margin-left: 
+                                                 auto; margin-right: auto;"),
+                                    
+                                    # Also learned from a peer's code comments
+                                    # that images have to be housed in a folder
+                                    # called "www" in order to be read in. 
+                                    # Upon further Googling, I learned that 
+                                    # the www directory also has to be at the
+                                    # same level as the UI and Server. So, in
+                                    # the app's main folder. 
                                     
                                     br(),
                                     
