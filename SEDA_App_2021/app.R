@@ -192,8 +192,8 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                       who attend them. While no two school districts 
                                       are exactly the same, the SEDA data allows 
                                       us to compare student outcomes across time 
-                                      and place in order to better understand-and 
-                                      explain-the variance in student achievement.
+                                      and place in order to better understand and 
+                                      explain the variance in student achievement.
                                       Now more than ever,as districts across the 
                                       country prepare for a post-pandemic educational 
                                       landscape, it is imperative that education 
