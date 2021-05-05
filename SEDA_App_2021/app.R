@@ -340,7 +340,24 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                           status and student achievement."),
                                         
                                         br(),
-                                        br(),
+                                        
+                                        p("In order to do this, I filtered the 
+                                          data down to three of the most influential
+                                          states in education policy: Texas, 
+                                          California, and Massachusetts. I then
+                                          ran three parallel regressions to see
+                                          within each state, what the expected range
+                                          of outcomes would be for 5th graders. 
+                                          I was able to run these regressions
+                                          separately and then compare them
+                                          to each other because the variables
+                                          in question (SES and student achievement)
+                                          are both standardized around the national
+                                          means. See the posterior below to compare
+                                          the expected student achievement for 
+                                          students in average SES districts, in 
+                                          each of the three states."),
+                                        
                                         
                                         # Again, loading in the images below
                                         # from the www folder.
@@ -376,8 +393,8 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                         
                                         # The Average SES Posterior
                                         img(src = "mean_ses_image.png", 
-                                            height = "80%", 
-                                            width = "80%",
+                                            height = "100%", 
+                                            width = "100%",
                                             style = "display: block; margin-left: 
                                             auto; margin-right: auto;"),
                                         
@@ -388,6 +405,7 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                         #    width = "80%",
                                         #    style = "display: block; margin-left: 
                                         #    auto; margin-right: auto;"),
+                                        
                                         p()),
                                     
                                     sidebarPanel(
