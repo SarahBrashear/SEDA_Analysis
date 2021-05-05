@@ -87,8 +87,7 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                         # load the app. Somehow it isn't working
                                         # though. When the app runs, AL pops up
                                         # for a second, and then it defaults to
-                                        # blank. If I revised/re-did this project,
-                                        # I would try to solve this. 
+                                        # blank. 
                                         
                                         
                                         
@@ -106,10 +105,11 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                           district. Along the X axis, you can 
                                           see a school district's average 
                                           socioeconomic status, with zero 
-                                          representing average SES. Along the Y 
-                                          axis, you see student achievement, 
-                                          measured by the average test scores of
-                                          5th graders in that district.")),
+                                          representing the national average SES. 
+                                          Along the Y axis, you see student 
+                                          achievement, measured by the average 
+                                          test scores of 5th graders in that 
+                                          district.")),
                                     
                                     
                                     h2("About the Data"),
@@ -179,7 +179,7 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                            ),
                            
                            # Panel 2
-                           tabPanel("The Model",
+                           tabPanel("Model",
                                     h2("How would we expect students in the 
                                        \"typical\" school district to perform on 
                                        future assessments?"),
@@ -283,7 +283,7 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                       above grade level if they have average
                                       socio-economic status, and just 10% of students 
                                       receive Special Education services, and 10% 
-                                      are English Language Learners. The plot below 
+                                      are English Language Learners. The plot above 
                                       shows the range of potential outcomes for 
                                       student achievement. Since each unit represents
                                       one grade level (5 indicating mastery of 
@@ -347,23 +347,47 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                         
                                         h4("Visualizing the Differences Between States"), 
                                         br(),
-                                        img(src = "low_ses_image.png", 
-                                            height = "80%", 
-                                            width = "80%",
-                                            style = "display: block; margin-left: 
-                                            auto; margin-right: auto;"),
-                                        br(),
+                                        
+                                        # Originally, I had three different 
+                                        # posteriors displayed, one for each state
+                                        # with low SES in the new obs, one for 
+                                        # each state with average SES in the new
+                                        # obs, and one for each state with high
+                                        # SES in the new obs. However, I got 
+                                        # feedback on demo day that all these 
+                                        # posteriors were confusing. I decided
+                                        # that it would be more clear to just 
+                                        # include the average SES comparative
+                                        # posterior since it directly answers
+                                        # my question. It also corresponds to the
+                                        # regression tables I am showing on the
+                                        # right side of the display. I wanted to
+                                        # keep the code though, in case I change
+                                        # my mind later. So I'm just commenting 
+                                        # it out here.
+                                
+                                        # The Low SES posterior
+                                        # img(src = "low_ses_image.png", 
+                                        #    height = "80%", 
+                                        #    width = "80%",
+                                        #    style = "display: block; margin-left: 
+                                        #    auto; margin-right: auto;"),
+                                        # br(),
+                                        
+                                        # The Average SES Posterior
                                         img(src = "mean_ses_image.png", 
                                             height = "80%", 
                                             width = "80%",
                                             style = "display: block; margin-left: 
                                             auto; margin-right: auto;"),
-                                        br(),
-                                        img(src = "high_ses_image.png", 
-                                            height = "80%", 
-                                            width = "80%",
-                                            style = "display: block; margin-left: 
-                                            auto; margin-right: auto;"),
+                                        
+                                        # The High SES Posterior
+                                        # br(),
+                                        # img(src = "high_ses_image.png", 
+                                        #    height = "80%", 
+                                        #    width = "80%",
+                                        #    style = "display: block; margin-left: 
+                                        #    auto; margin-right: auto;"),
                                         p()),
                                     
                                     sidebarPanel(

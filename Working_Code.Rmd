@@ -171,9 +171,11 @@ data %>%
 
 
 
-```{r}
+```{r, fit_1}
 
-# Fit one considers for racial demographics
+# Fit one regresses SES on achievement, taking into consideration racial demographics
+# Each of the other variables is the percentage of the students that are from 
+# that particular racial category. 
 
 fit_1 <- stan_glm(meanavg ~ sesavgall + sesavgall*perind + sesavgall*perasn +
                     sesavgall*perhsp + sesavgall*perblk + sesavgall*perwht, 
@@ -184,10 +186,14 @@ fit_1 <- stan_glm(meanavg ~ sesavgall + sesavgall*perind + sesavgall*perasn +
 ```
 
 
-```{r}
+```{r, fit_2}
 
-# Fit two considers non-racial or economic demographics - percent that are 
+# Fit two considers non-racial or economic demographics - the percent that are 
 # English language learners, special ed, and the size of the school district
+# It makes sense that districts with larger than average %s of students in these
+# groups would have lower achievement than otherwise expected, so it makes sense
+# to include them in the model so we can hold them constant across districts in 
+# a new obs if this ends up being the best model. 
 
 fit_2 <- stan_glm(meanavg ~ sesavgall + sesavgall*perell + sesavgall*perspeced, 
                   data = model_data, 
@@ -197,17 +203,32 @@ fit_2 <- stan_glm(meanavg ~ sesavgall + sesavgall*perell + sesavgall*perspeced,
 ```
 
 
-```{r}
+```{r, fit_3}
 
-fit_3 <- stan_glm(meanavg ~ sesavgall*stateabb, 
+# Fit three includes the states variable so that I can incorporate states into
+# my new obs and look at different posteriors for different states.
+# Still makes sense to hold % of language learners and special ed students constant
+
+fit_3 <- stan_glm(meanavg ~ sesavgall + sesavgall*stateabb + perell + perspeced, 
                   data = model_data, 
                   seed = 28,
                   refresh = 0)
 
 ```
 
+```{r, fit_4}
 
-```{r}
+# Fit four is the same idea as fit three, but I removed the ELL and special ed
+# variables because the regression fails to run on my machine. 
+
+fit_4 <- stan_glm(meanavg ~ sesavgall + sesavgall*stateabb, 
+                  data = model_data, 
+                  seed = 28,
+                  refresh = 0)
+```
+
+
+```{r, loo_compare}
 
 # comparing the models 
 
@@ -220,20 +241,24 @@ loo_fit_2 <- loo(fit_2)
 
 loo_fit_3 <- loo(fit_3) 
 
-loo_compare(loo_fit_1, loo_fit_2)
+loo_fit_4 <- loo(fit_4)
+# loo_fit_4 has elpd_loo of -181737544.5	and SE of 16169052.5
+
+loo_compare(loo_fit_1, loo_fit_2, loo_fit_4)
 
 
 ```
 
 
 
-```{r}
+```{r, reg_table}
 tbl_regression(fit_2, 
                intercept = TRUE, 
                estimate_fun = function(x) style_sigfig(x, digits = 3)) %>%
   as_gt() %>%
     tab_header(title = "Student Achievement Based on SES", 
-               subtitle = "How Treatment Assignment and Voting History Predict Likelihood of Voting") %>%
+               subtitle = "How Treatment Assignment and Voting History Predict 
+               Likelihood of Voting") %>%
     tab_source_note(md("SEDA")) %>% 
   cols_label(estimate = md("**Parameter**"))
 ```
@@ -269,12 +294,6 @@ pe_all %>%
 
 ```
 
-
-
-Thinking of looking at SES and student achievement
-I have every county in US, every year 2009-2018, every grade 3-8th, math and ELA
-
-
 ```{r}
 
 summary(data$sesavgall)
@@ -293,9 +312,16 @@ summary(covariates$sesall)
 ```
 
 ## Describing the data:
-meanavg: “Mean pooled grade scale: A one-unit difference in this grade-equivalent unit scale is interpretable as equivalent to the average difference in skills between students one grade level apart in school...”
+meanavg: “Mean pooled grade scale: A one-unit difference in this grade-equivalent 
+unit scale is interpretable as equivalent to the average difference in skills 
+between students one grade level apart in school...”
 
-sesavgall: “For GSDs, counties and metros, we use data from the ACS to construct measures of median family income, proportion of adults with a bachelor’s degree or higher, proportion of adults that are unemployed, the household poverty rate, the proportion of households receiving SNAP benefits, and the proportion of households with children that are headed by a single mother.We also combine these measures to construct a single socioeconomic status composite...”
+sesavgall: “For GSDs, counties and metros, we use data from the ACS to construct 
+measures of median family income, proportion of adults with a bachelor’s degree 
+or higher, proportion of adults that are unemployed, the household poverty rate, 
+the proportion of households receiving SNAP benefits, and the proportion of 
+households with children that are headed by a single mother.We also combine 
+these measures to construct a single socioeconomic status composite...”
 
 ## Potential Questions:
 Is demography destiny? 
@@ -304,6 +330,8 @@ does it determine outcomes?
 
 For a district with low, average, and high SES, what might their student 
 achievement look like?
+
+How much does this vary across states?
 
 
 ```{r}
@@ -634,6 +662,8 @@ final_thing %>%
 
 ```{r}
 # using patchwork - don't love how this looks though
+# ended up not incorporating this in my final app, but saving the code for future
+# reference
 
 low_ses_plot + mean_ses_plot + high_ses_plot +
     plot_annotation(
@@ -646,52 +676,5 @@ low_ses_plot + mean_ses_plot + high_ses_plot +
 
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-## Mapz
-```{r, school_district_map}
-
-# Example map using Census Geometry!! Using nonsense variables though.
-# ACS data differ from decennial Census data as they are based on an annual sample of approximately 3 million households, rather than a more complete enumeration of the US population. In turn, ACS data points are estimates characterized by a margin of error. tidycensus will always return the estimate and margin of error together for any requested variables when using get_acs().
-
-states <- c("MA", "TX")
-
-map <- get_acs(geography = "school district (unified)",
-               state = "CA",
-               variables = c("B06009_001", "B06009_006"),
-               year = 2019,
-               output = "wide",
-               geometry = TRUE)
-
-
-map %>%
-  as.tibble()
-  mutate(Percent = 100 * (B06009_006 / B06009_001)) %>%
-  ggplot(aes(fill = Percent, color = Percent)) +
-  geom_sf() 
-  
-# saveRDS(map, "middlesex.rds")
-
-
-```
-
-```{r}
-countymap <- get_acs(geography = "",
-               state = "TX",
-               variables = c("B06009_001", "B06009_006"),
-               year = 2019,
-               output = "wide",
-               geometry = TRUE)
-```
 
 
