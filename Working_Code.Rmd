@@ -303,8 +303,6 @@ tbl_regression(fit_6,
 # The posterior does a better job answering my question.
 ```
 
-
-
 ```{r, comparative_posterior}
 
 new_obs_1 <- tibble(sesavgall = 0.2053,
@@ -317,7 +315,7 @@ new_obs_1 <- tibble(sesavgall = 0.2053,
                        # 2 = California
                        # 3 = Massachusetts
 
-pe_all <- posterior_epred(fit_6, newdata = new_obs_1) %>% 
+pe_states <- posterior_epred(fit_6, newdata = new_obs_1) %>% 
   as_tibble() %>%
   mutate_all(as.numeric) %>%
   rename(Others = `1`,
@@ -326,7 +324,7 @@ pe_all <- posterior_epred(fit_6, newdata = new_obs_1) %>%
          Massachusetts = `4`)
 
 
-pe_all %>%
+pe_states %>%
   pivot_longer(names_to = "State",
                values_to = "Student Achievement",
                cols = Texas:Massachusetts) %>%
@@ -342,15 +340,54 @@ pe_all %>%
 
 ```
 
-
-```{r, save_plot2}
+```{r, save_plot1}
 
 ggsave("states_posterior.png", plot = last_plot())
 
 ```
 
+```{r, posterior_plot}
+
+new_obs_2 <- tibble(sesavgall = 0.2053,
+                       perell = .1,
+                       perspeced = .01, 
+                       state = c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+                                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                 0, 0, 0, 1, 2, 3))
+
+pe <- posterior_epred(fit_6, newdata = new_obs_2) %>% 
+  as_tibble() %>%
+  mutate_all(as.numeric) %>%
+  pivot_longer(names_to = "Draw",
+               values_to = "Achievement",
+               cols = `1`:`51`
+              )
+
+pe %>%
+    ggplot(aes(x = `Achievement`)) +
+    geom_histogram(aes(y = after_stat(count/sum(count))),
+                   bins = 300,
+                   color = 'royalblue4',
+                   alpha = .4)  +
+
+    labs(title = "Predicted Student Achievement for the Average School District",
+         subtitle = "Districts very likely to achieve slightly above grade level",
+         x = "Expected Student Achievement for a 5th Grader",
+         y = "Probability") +
+    theme_classic() 
+
+```
 
 
+```{r, save_plot2}
+
+ggsave("posterior.png", plot = last_plot())
+
+```
+
+
+## Alternate analysis - directly filtering the data before running the posteriors
 
 ```{r}
 tx_data <- data %>%
@@ -632,6 +669,3 @@ low_ses_plot + mean_ses_plot + high_ses_plot +
 
 
 ```
-
-
-
