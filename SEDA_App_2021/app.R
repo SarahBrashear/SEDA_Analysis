@@ -203,7 +203,7 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                     p("I designed a predictive model to explore 
                                       the ", 
                                       strong("predicted student achievement"),
-                                      "for each school district in the nation, based 
+                                      "for the average school district, based 
                                       on socio-economic status. With a lens towards 
                                       equity, I wanted to explore whether \"demography 
                                       is destiny\" for students in U.S. public schools, 
@@ -226,8 +226,8 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                       parental income). Using the Loo Compare analysis, 
                                       I found that the racial demographic variables 
                                       were not statistically significant. Further, 
-                                      the model that accounted for a districts' 
-                                      percentage of English Language Learners and 
+                                      the model that accounted for state, district's 
+                                      percentage of English Language Learners, and 
                                       students receiving special education services 
                                       was the strongest. It is illustrated below."),
                                     
@@ -241,8 +241,9 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                     
                                     withMathJax('$$ meanavg_i = \\beta_0 + 
                                         \\beta_1sesavgall_i + 
-                                        \\beta_2sesavgall_i*perell_i + 
-                                        \\beta_3sesavgall_i*perspeced_i +
+                                        \\beta_2sesavgall_i*state_i + 
+                                        \\beta_3perell_i +
+                                        \\beta_4perspeced_i +
                                         \\varepsilon_i $$'),
                                     
                                     br(),
@@ -277,13 +278,16 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                     
                                     br(),
                                     
-                                    p("Based on this model, we would expect 5th 
+                                    p("Based on this model,", 
+                                      strong("we would expect 5th 
                                       grade students in an average school district 
                                       in the United States to perform slightly 
-                                      above grade level if they have average
+                                      above grade level"),
+                                      "if they have national average
                                       socio-economic status, and just 10% of students 
                                       receive Special Education services, and 10% 
-                                      are English Language Learners. The plot above 
+                                      are English Language Learners, regardless 
+                                      of the state they are in. The plot above 
                                       shows the range of potential outcomes for 
                                       student achievement. Since each unit represents
                                       one grade level (5 indicating mastery of 
@@ -291,14 +295,14 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                       6 indicating 6th grade, and so on), this 
                                       model estimates that 5th graders are very 
                                       likely to perform between 5.37 and 5.47. While 
-                                      it is reassuring to see that America's 5th 
-                                      graders are performing slightly above 5th 
-                                      grade-level, on average, this finding alone 
-                                      was not particularly insightful. The more 
-                                      I dug into the data, though, the more I realized 
-                                      that there are wide discrepencies between 
-                                      the predicted achievement outcomes between 
-                                      different states. Click on the 'Differences 
+                                      it is reassuring to see that America's middle
+                                      class 5th graders are performing slightly 
+                                      above 5th grade-level, on average, this finding 
+                                      alone was not particularly insightful. The 
+                                      more I dug into the data, though, the more 
+                                      I realized that there are wide discrepencies 
+                                      between the predicted achievement outcomes 
+                                      between different states. Click on the 'Differences 
                                       Between States' tab to learn more.") 
                                     
                                     # My biggest error when editing this app is
@@ -341,98 +345,44 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                         
                                         br(),
                                         
-                                        p("In order to do this, I filtered the 
-                                          data down to three of the most influential
+                                        p("In order to do this, I focused on 
+                                          three of the most influential
                                           states in education policy: Texas, 
-                                          California, and Massachusetts. I then
-                                          ran three parallel regressions to see
-                                          within each state, what the expected range
-                                          of outcomes would be for 5th graders. 
-                                          I was able to run these regressions
-                                          separately and then compare them
-                                          to each other because the variables
-                                          in question (SES and student achievement)
-                                          are both standardized around the national
-                                          means. See the posterior below to compare
+                                          California, and Massachusetts. See the 
+                                          posterior below to compare
                                           the expected student achievement for 
                                           students in average SES districts, in 
-                                          each of the three states."),
+                                          each of the three states, when percentages
+                                          of English Language Learners and Special 
+                                          Education students are held constant at
+                                          10%."),
                                         
+                                        br(),
                                         
                                         # Again, loading in the images below
                                         # from the www folder.
                                         
-                                        h4("Visualizing the Differences Between States"), 
+                                        h4("Visualizing the Differences Between 
+                                           States"), 
                                         br(),
                                         
-                                        # Originally, I had three different 
-                                        # posteriors displayed, one for each state
-                                        # with low SES in the new obs, one for 
-                                        # each state with average SES in the new
-                                        # obs, and one for each state with high
-                                        # SES in the new obs. However, I got 
-                                        # feedback on demo day that all these 
-                                        # posteriors were confusing. I decided
-                                        # that it would be more clear to just 
-                                        # include the average SES comparative
-                                        # posterior since it directly answers
-                                        # my question. It also corresponds to the
-                                        # regression tables I am showing on the
-                                        # right side of the display. I wanted to
-                                        # keep the code though, in case I change
-                                        # my mind later. So I'm just commenting 
-                                        # it out here.
-                                
-                                        # The Low SES posterior
-                                        # img(src = "low_ses_image.png", 
-                                        #    height = "80%", 
-                                        #    width = "80%",
-                                        #    style = "display: block; margin-left: 
-                                        #    auto; margin-right: auto;"),
-                                        # br(),
                                         
-                                        # The Average SES Posterior
-                                        img(src = "mean_ses_image.png", 
+                                        # The Average SES, Comparative Posterior
+                                        img(src = "states_posterior.png", 
                                             height = "100%", 
                                             width = "100%",
                                             style = "display: block; margin-left: 
                                             auto; margin-right: auto;"),
                                         
-                                        # The High SES Posterior
-                                        # br(),
-                                        # img(src = "high_ses_image.png", 
-                                        #    height = "80%", 
-                                        #    width = "80%",
-                                        #    style = "display: block; margin-left: 
-                                        #    auto; margin-right: auto;"),
-                                        
-                                        p()),
-                                    
-                                    sidebarPanel(
-                                        p(strong("Regression Tables for State-Level 
-                                                 Models"))),
-                                    br(),
-                                    
-                                    img(src = "ca_table.png", 
-                                        height = "30%", 
-                                        width = "30%",
-                                        style = "display: block; margin-left: 
-                                        auto; margin-right: auto;"),
-                                    img(src = "tx_table.png", 
-                                        height = "32%", 
-                                        width = "32%",
-                                        style = "display: block; margin-left: 
-                                        auto; margin-right: auto;"),
-                                    img(src = "ma_table.png", 
-                                        height = "27%", 
-                                        width = "27%",
-                                        style = "display: block; margin-left: 
-                                        auto; margin-right: auto;")
-                                    
-                                    
-                                    
-                                    
-                                    
+
+                                        p("As you can see, predicted achievement
+                                          can vary considerably between states.
+                                          Among the \"Big Three\" in education,
+                                          it is likely that there is about", 
+                                          strong("half of a grade level of variation 
+                                          between predicted outcomes for students"), 
+                                          "in Texas compared to students in Massachusetts.")),
+                                
                            ),
                            
                            
@@ -443,34 +393,26 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                     mainPanel(
                                         h3("About the Project"),
                                         h4("Summary"),
-                                        p("This project explores the question of 
-                                          whether demography is destiny in American 
-                                          public school districts. I started by 
-                                          examining the relationship between 
-                                          socio-economic status and student 
+                                        p("This project explores the relationship 
+                                          between socio-economic status and student 
                                           achievement for each of the roughly 
                                           13,000 school districts in the country. 
                                           I grouped districts by their states 
                                           since the majority of education policy 
                                           decision-making happens at the state 
-                                          level. In each state, there is a positive 
+                                          level. In each state, I found a positive 
                                           correlation between SES and student 
                                           achievement; however, the magnitude of 
                                           correlations vary. I then built a 
-                                          predictive model that draws on all 450 
-                                          million test scores from students in 
-                                          grades 3-8 from 2008-2018, that predicts 
-                                          that 5th graders from a typical school 
+                                          predictive model that estimates that
+                                          students from a typical school 
                                           district will perform slightly above 
                                           grade-level on future assessments under 
                                           a certain set of assumptions. Because 
                                           I was interested in the variance between 
-                                          states, I also ran the same model on 
-                                          subsets of the data (a Texas model, a 
-                                          Califonia model, and a Massachusetts 
-                                          model) under three different sets of 
-                                          assumptions (low SES, average SES, and 
-                                          high SES). Ultimately the variance 
+                                          states, I also analyzed the posterior
+                                          distributions for three of the most 
+                                          influential states. Ultimately the variance 
                                           between these states could be used to 
                                           inform policy decisions in the future 
                                           as state education agencies strategically 
@@ -494,7 +436,7 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                           Another limitation of this analysis is 
                                           that my models use 5th grade test scores 
                                           to represent student achievement for 
-                                          the school district. While the scores
+                                          the school districts. While the scores
                                           are averaged across several years, a 
                                           stronger model may make use of more 
                                           grade levels, or examine differences 
@@ -533,7 +475,8 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                         img(src = "IMG_6688.JPG", 
                                             height = "60%", 
                                             width = "60%",
-                                            style = "display: block; margin-left: auto; margin-right: auto;"),
+                                            style = "display: block; margin-left: 
+                                            auto; margin-right: auto;"),
                                         h3("About Me"),
                                         h4("Sarah Brashear, Ed.M. Candidate"),
                                         h4("Harvard Graduate School of Education"),

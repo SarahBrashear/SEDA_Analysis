@@ -168,14 +168,13 @@ data %>%
   scale_size_continuous(range = c(1, 10))
 ```
 
-
-
-
 ```{r, fit_1}
 
-# Fit one regresses SES on achievement, taking into consideration racial demographics
+# Fit 1 regresses SES on achievement, taking into consideration racial demographics
 # Each of the other variables is the percentage of the students that are from 
 # that particular racial category. 
+# Turns out that these are not significant when SES is already accounted for so 
+# I do not use them in my final model. 
 
 fit_1 <- stan_glm(meanavg ~ sesavgall + sesavgall*perind + sesavgall*perasn +
                     sesavgall*perhsp + sesavgall*perblk + sesavgall*perwht, 
@@ -184,7 +183,6 @@ fit_1 <- stan_glm(meanavg ~ sesavgall + sesavgall*perind + sesavgall*perasn +
                   refresh = 0)
 
 ```
-
 
 ```{r, fit_2}
 
@@ -201,7 +199,6 @@ fit_2 <- stan_glm(meanavg ~ sesavgall + sesavgall*perell + sesavgall*perspeced,
                   refresh = 0)
 
 ```
-
 
 ```{r, fit_3}
 
@@ -225,8 +222,39 @@ fit_4 <- stan_glm(meanavg ~ sesavgall + sesavgall*stateabb,
                   data = model_data, 
                   seed = 28,
                   refresh = 0)
+
+# Turns out the reason why these models were failing is because the chains don't
+# have enough material to converge after having 50+ controls because of my
+# stateabb variable
 ```
 
+
+```{r}
+# Since I cannot have every state with it's own parameter, I decided to create
+# a new variable that indicates Texas, California, or another state
+
+final_data <- model_data %>%
+  mutate(state = case_when(stateabb == "TX" ~ 1,
+                           stateabb == "CA" ~ 2,
+                           stateabb == "MA" ~ 3,
+                           stateabb != "TX" |
+                           stateabb != "MA" |
+                           stateabb != "CA" ~ 0))
+```
+
+```{r, fit_5}
+fit_5 <- stan_glm(meanavg ~ sesavgall + sesavgall*state, 
+                  data = final_data, 
+                  seed = 28,
+                  refresh = 0)
+```
+
+```{r, fit_6}
+fit_6 <- stan_glm(meanavg ~ sesavgall + sesavgall*state + perell + perspeced, 
+                  data = final_data, 
+                  seed = 28,
+                  refresh = 0)
+```
 
 ```{r, loo_compare}
 
@@ -244,7 +272,15 @@ loo_fit_3 <- loo(fit_3)
 loo_fit_4 <- loo(fit_4)
 # loo_fit_4 has elpd_loo of -181737544.5	and SE of 16169052.5
 
-loo_compare(loo_fit_1, loo_fit_2, loo_fit_4)
+loo_fit_5 <- loo(fit_5)
+# elpd_loo of -11946.6	and SE of 93.6	
+
+loo_fit_6 <- loo(fit_6)
+# elpd_loo of -8634.0 and SE of 83.4	
+
+loo_compare(loo_fit_5, loo_fit_6)
+
+# Fit 6 is the best model
 
 
 ```
@@ -252,13 +288,12 @@ loo_compare(loo_fit_1, loo_fit_2, loo_fit_4)
 
 
 ```{r, reg_table}
-tbl_regression(fit_2, 
+tbl_regression(fit_6, 
                intercept = TRUE, 
                estimate_fun = function(x) style_sigfig(x, digits = 3)) %>%
   as_gt() %>%
     tab_header(title = "Student Achievement Based on SES", 
-               subtitle = "How Treatment Assignment and Voting History Predict 
-               Likelihood of Voting") %>%
+               subtitle = "How state predicts academic opportunity") %>%
     tab_source_note(md("SEDA")) %>% 
   cols_label(estimate = md("**Parameter**"))
 ```
@@ -267,30 +302,38 @@ tbl_regression(fit_2,
 
 ```{r}
 
-
-new_obs_test <- tibble(sesavgall = 0.2053,
+new_obs_1 <- tibble(sesavgall = 0.2053,
                        perell = .1,
                        perspeced = .01,
-                       totenrl = 20000)
+                       state = c(0, 1, 2, 3))
 
-pe_all <- posterior_epred(fit_2, newdata = new_obs_test) %>% 
+                       # 0 = all other states
+                       # 1 = Texas
+                       # 2 = California
+                       # 3 = Massachusetts
+
+pe_all <- posterior_epred(fit_6, newdata = new_obs_1) %>% 
   as_tibble() %>%
-  mutate_all(as.numeric) 
+  mutate_all(as.numeric) %>%
+  rename(Others = `1`,
+         Texas = `2`,
+         California = `3`,
+         Massachusetts = `4`)
 
 
 pe_all %>%
-  ggplot(aes(x = `1`,
-             alpha = .9)) +
-    geom_histogram(aes(y = after_stat(count/sum(count))),
-                   bins = 100,
-                   fill = 'royalblue4')  +
-    labs(title = "Predicted Student Achievement for the Average School District",
-         subtitle = "Districts very likely to achieve slightly above grade-level",
+  pivot_longer(names_to = "State",
+               values_to = "Student Achievement",
+               cols = Texas:Massachusetts) %>%
+
+  ggplot(aes(x = `Student Achievement`)) +
+    stat_slab(aes(fill = State))  +
+    labs(title = "Predicted Student Achievement by States",
+         subtitle = "Districts in Texas Outperform California and Massachusetts",
          x = "Expected Student Achievement for a 5th Grader",
          y = "Probability") +
-    scale_y_continuous(labels = scales::percent_format()) +
-    theme_classic() +
-    theme(legend.position = "none")
+    theme_classic() 
+
 
 ```
 
