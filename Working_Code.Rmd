@@ -296,11 +296,16 @@ tbl_regression(fit_6,
                subtitle = "How state predicts academic opportunity") %>%
     tab_source_note(md("SEDA")) %>% 
   cols_label(estimate = md("**Parameter**"))
+
+# I decided not to include this table in my final app because the parameters are
+# not particularly meaningful, especially the states parameter since the values
+# are designed to indicate which state but not to be interpreted numerically. 
+# The posterior does a better job answering my question.
 ```
 
 
 
-```{r}
+```{r, comparative_posterior}
 
 new_obs_1 <- tibble(sesavgall = 0.2053,
                        perell = .1,
@@ -337,44 +342,14 @@ pe_all %>%
 
 ```
 
-```{r}
 
-summary(data$sesavgall)
+```{r, save_plot2}
 
-# This is the county's mean student achievement:
-summary(seda$cs_mn_all)
-summary(data$sesavgall)
-
-seda %>%
-  select(stateabb, sedacounty, sedacountyname, subject, grade, year, cs_mn_all) %>%
-  drop_na(cs_mn_all)
-
-# This is the county's SES:
-summary(covariates$sesall)
+ggsave("states_posterior.png", plot = last_plot())
 
 ```
 
-## Describing the data:
-meanavg: “Mean pooled grade scale: A one-unit difference in this grade-equivalent 
-unit scale is interpretable as equivalent to the average difference in skills 
-between students one grade level apart in school...”
 
-sesavgall: “For GSDs, counties and metros, we use data from the ACS to construct 
-measures of median family income, proportion of adults with a bachelor’s degree 
-or higher, proportion of adults that are unemployed, the household poverty rate, 
-the proportion of households receiving SNAP benefits, and the proportion of 
-households with children that are headed by a single mother.We also combine 
-these measures to construct a single socioeconomic status composite...”
-
-## Potential Questions:
-Is demography destiny? 
-We know that socioeconomic status is correlated with student achievement. But 
-does it determine outcomes? 
-
-For a district with low, average, and high SES, what might their student 
-achievement look like?
-
-How much does this vary across states?
 
 
 ```{r}
@@ -465,22 +440,12 @@ tbl_regression(fit_ca,
   cols_label(estimate = md("**Parameter**"))
 ```
 
-
 ```{r}
 fit_tx <- stan_glm(meanavg ~ sesavgall + sesavgall*perell + sesavgall*perspeced, 
                   data = tx_md, 
                   seed = 28,
                   refresh = 0)
 ```
-
-
-$freedom_i = \\beta_0 + \\beta_1agreement_i + 
-                        \\beta_2Male_i + \\beta_3agreement_i*Gender_1 +
-                           \\epsilon_i$')
-                           
-$meanavg_i=\beta_0 + \beta_1 sesavgall_i + \beta_2 sesavgall_i * perell_i + \beta_3 sesavgall_i * perspeced_i + \varepsilon_i $
-
-
 
 ```{r}
 fit_ca <- stan_glm(meanavg ~ sesavgall + sesavgall*perell + sesavgall*perspeced, 
@@ -495,13 +460,6 @@ fit_ma <- stan_glm(meanavg ~ sesavgall + sesavgall*perell + sesavgall*perspeced,
                   seed = 28,
                   refresh = 0)
 ```
-
-```{r}
-model_data %>%
-  ggplot(aes(x = perspeced)) +
-  geom_histogram()
-```
-
 
 ```{r}
 # This is modeling achievement for districts with low SES only
@@ -553,17 +511,6 @@ low_ses_plot <- plot_data_1 %>%
     theme(legend.position = "bottom")
 
 ```
-
-
-```{r}
-
-write_rds(low_ses_plot, "SEDA_App/low_ses_plot.rds")
-
-ggsave("img01.png", plot = last_plot())
-
-```
-
-
 
 ```{r} 
 
@@ -618,10 +565,6 @@ mean_ses_plot <- plot_data_2 %>%
   
 ```
 
-
-
-
-
 ```{r} 
 
 # This is modeling achievement for districts with high SES only
@@ -673,35 +616,6 @@ high_ses_plot <- plot_data_3 %>%
     theme(legend.position = "bottom")
   
 ```
-
-
-
-
-```{r}
-
-master_plot_data <- tibble(plot_data_1, plot_data_2, plot_data_3)
-
-final_thing <- master_plot_data %>%
-  pivot_longer(names_to = "state",
-               values_to = "values",
-               cols = `Texas_Low`:`Massachusetts_High`) %>%
-  mutate(SES = ifelse(state %in% "Low", "Low", "Not Low"
-                      ))
-
-final_thing %>%
- ggplot(aes(x = values, 
-             y = as.character(type))) +
-    
-    stat_slab(alpha = 0.5) +
-    labs(title = "Voting Probability by Age and Treatment",
-         subtitle = "Focus on Democratic Females who are Municipal Primary Voters", 
-         x = "Probability of Voting",
-         y = "Age Bin") +
-  scale_x_continuous(labels = scales::number_format()) +
-  theme_classic()
-
-```
-
 
 ```{r}
 # using patchwork - don't love how this looks though
