@@ -80,14 +80,15 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                         selectInput(inputId = "selected_state",
                                                     label = "Choose a state",
                                                     choices = data$stateabb,
-                                                    selected = "AL"),
+                                                    selected = data$stateabb == "AL"),
                                         
-                                        # the 'selected' argument should control
-                                        # which state is displayed when you first
-                                        # load the app. Somehow it isn't working
-                                        # though. When the app runs, AL pops up
-                                        # for a second, and then it defaults to
-                                        # blank. 
+                                        # I got hung up on the selected argument
+                                        # for awhile. At first I just set it equal
+                                        # to "AL", but it still came out blank in
+                                        # the app. finally found a similar
+                                        # problem on a discussion board, and realized
+                                        # I neeed to specifiy where the "AL" was
+                                        # coming from, with data$stateabb.
                                         
                                         
                                         

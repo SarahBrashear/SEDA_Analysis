@@ -1,5 +1,5 @@
 ---
-title: "Initial Project Code"
+title: "Working Project Code"
 author: "Sarah Brashear"
 date: "4/9/2021"
 output: html_document
@@ -168,6 +168,8 @@ data %>%
   scale_size_continuous(range = c(1, 10))
 ```
 
+## Justice & Courage
+
 ```{r, fit_1}
 
 # Fit 1 regresses SES on achievement, taking into consideration racial demographics
@@ -231,7 +233,7 @@ fit_4 <- stan_glm(meanavg ~ sesavgall + sesavgall*stateabb,
 
 ```{r}
 # Since I cannot have every state with it's own parameter, I decided to create
-# a new variable that indicates Texas, California, or another state
+# a new variable that indicates Texas, California, Mass, or other state
 
 final_data <- model_data %>%
   mutate(state = case_when(stateabb == "TX" ~ 1,
@@ -281,11 +283,9 @@ loo_fit_6 <- loo(fit_6)
 loo_compare(loo_fit_5, loo_fit_6)
 
 # Fit 6 is the best model
-
+# I write out the math behind the model in my actual app.
 
 ```
-
-
 
 ```{r, reg_table}
 tbl_regression(fit_6, 
@@ -303,12 +303,14 @@ tbl_regression(fit_6,
 # The posterior does a better job answering my question.
 ```
 
+## Temperance
+
 ```{r, comparative_posterior}
 
 new_obs_1 <- tibble(sesavgall = 0.2053,
-                       perell = .1,
-                       perspeced = .01,
-                       state = c(0, 1, 2, 3))
+                    perell = .1,
+                    perspeced = .01,
+                    state = c(0, 1, 2, 3))
 
                        # 0 = all other states
                        # 1 = Texas
@@ -355,6 +357,12 @@ new_obs_2 <- tibble(sesavgall = 0.2053,
                                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                  0, 0, 0, 1, 2, 3))
+                        # used this as a workaround so that CA, TX, and MA were
+                        # were not weighted WAY more than the other states in 
+                        # national posterior. 
+                        # In reality, it doesn't make much of a difference though.
+                        # I checked by running it with state = c(1, 2, 3) and it's
+                        # basically identical.
 
 pe <- posterior_epred(fit_6, newdata = new_obs_2) %>% 
   as_tibble() %>%
@@ -388,51 +396,16 @@ ggsave("posterior.png", plot = last_plot())
 
 
 ## Alternate analysis - directly filtering the data before running the posteriors
+# NOTE: NOT USED IN MY FINAL APP
 
-```{r}
-tx_data <- data %>%
-  filter(stateabb == "TX") 
+```{r, alt_analysis}
 
-data %>%
-  filter(stateabb == "TX") %>%
-  drop_na(sesavgall, meanavg) %>%
-  
-  
-  ggplot(aes(x = sesavgall, 
-             y = meanavg,
-             size = tot_asmts,
-             # color = ifelse(stateabb == "CA", "blue", "black")
-             )) +
-  geom_point(alpha = .4,
-             color = 'royalblue4') +
-  geom_hline(yintercept = 5, linetype = "dashed") +
-  geom_smooth(method = "lm", formula = y ~ poly(x, 3), color = "grey15", se = FALSE) +
-  labs(title = "Correlation Between SES and Academic Acheivement",
-       subtitle = "Each Bubble is a Public School District",
-       x = "Average Family Socioeconomic Status",
-       y = "Average Student Achievement of 5th Graders",
-       caption = "Source: Stanford Educational Data Archive (SEDA)") +
-  theme_classic() +
-  theme(legend.position = "none") +
-  scale_size_continuous(range = c(1, 10))
+# When I was having a hard time running a model that would allow me to include
+# states as an interaction term (because it had to generate so many parameters 
+# that way), I hypothesized that I could create my posterior by filtering the
+# data down to just the state I was interested in, and running a posterior from
+# the filtered data. 
 
-
-  geom_point(data = tx_data,
-             aes(x = sesavgall,
-                 y = meanavg),
-             color = 'blue',
-             alpha = .5) 
-    
-                # color=ifelse(stateabb == "CA", 'red', 'blue')))
-
-ca_data <- data %>%
-  filter(stateabb == "CA")
-
-ma_data <- data %>%
-  filter(stateabb == "MA")
-```
-
-```{r}
 tx_md <- model_data %>%
   filter(stateabb == "TX")
 
@@ -441,10 +414,40 @@ ca_md <- model_data %>%
 
 ma_md <- model_data %>%
   filter(stateabb == "MA")
+
+# I used the same three states in this analysis, for the same substantive reasons
+# explained in my app. Then I ran the three regressions, shown below
+
 ```
 
 
-```{r}
+```{r, fit_tx}
+fit_tx <- stan_glm(meanavg ~ sesavgall + sesavgall*perell + sesavgall*perspeced, 
+                  data = tx_md, 
+                  seed = 28,
+                  refresh = 0)
+```
+
+```{r, fit_ca}
+fit_ca <- stan_glm(meanavg ~ sesavgall + sesavgall*perell + sesavgall*perspeced, 
+                  data = ca_md, 
+                  seed = 28,
+                  refresh = 0)
+```
+
+```{r, fit_ma}
+fit_ma <- stan_glm(meanavg ~ sesavgall + sesavgall*perell + sesavgall*perspeced, 
+                  data = ma_md, 
+                  seed = 28,
+                  refresh = 0)
+```
+
+
+```{r, state_reg_tables}
+
+# Then I created regression tables for each of these fits, to compare the differences
+# in parameters between states
+
 tbl_regression(fit_tx, 
                intercept = TRUE, 
                estimate_fun = function(x) style_sigfig(x, digits = 3)) %>%
@@ -453,9 +456,8 @@ tbl_regression(fit_tx,
                subtitle = "Texas School Districts Fall Near Middle of 50 States") %>%
     tab_source_note(md("Source: Stanford Educational Data Archive (SEDA)")) %>% 
   cols_label(estimate = md("**Parameter**"))
-```
 
-```{r}
+
 tbl_regression(fit_ma, 
                intercept = TRUE, 
                estimate_fun = function(x) style_sigfig(x, digits = 3)) %>%
@@ -464,9 +466,8 @@ tbl_regression(fit_ma,
                subtitle = "Massachusetts School Districts Outperform Most Other States") %>%
     tab_source_note(md("Source: Stanford Educational Data Archive (SEDA)")) %>% 
   cols_label(estimate = md("**Parameter**"))
-```
 
-```{r}
+
 tbl_regression(fit_ca, 
                intercept = TRUE, 
                estimate_fun = function(x) style_sigfig(x, digits = 3)) %>%
@@ -477,33 +478,17 @@ tbl_regression(fit_ca,
   cols_label(estimate = md("**Parameter**"))
 ```
 
-```{r}
-fit_tx <- stan_glm(meanavg ~ sesavgall + sesavgall*perell + sesavgall*perspeced, 
-                  data = tx_md, 
-                  seed = 28,
-                  refresh = 0)
-```
-
-```{r}
-fit_ca <- stan_glm(meanavg ~ sesavgall + sesavgall*perell + sesavgall*perspeced, 
-                  data = ca_md, 
-                  seed = 28,
-                  refresh = 0)
-```
-
-```{r}
-fit_ma <- stan_glm(meanavg ~ sesavgall + sesavgall*perell + sesavgall*perspeced, 
-                  data = ma_md, 
-                  seed = 28,
-                  refresh = 0)
-```
-
-```{r}
-# This is modeling achievement for districts with low SES only
+```{r, low_ses_pe}
+# Then I decided to look at how the difference between states changed over different
+# levels of SES.
+# I started with low SES here:
 
 new_obs_low <- tibble(sesavgall = -0.3082,
+                      
+                      # -.3082 is the lowest quartile of SES
+                      
                       perell = .1,
-                      perspeced = .1
+                      perspeced = .01
                     )
 
 pe1_tx <- posterior_epred(fit_tx, newdata = new_obs_low) %>% 
@@ -519,7 +504,7 @@ pe1_ma <- posterior_epred(fit_ma, newdata = new_obs_low) %>%
   mutate_all(as.numeric) 
 ```
 
-```{r}
+```{r, low_ses_plot}
 
 Texas_Low <- pe1_tx$`1`
 California_Low <- pe1_ca$`1`
@@ -549,13 +534,17 @@ low_ses_plot <- plot_data_1 %>%
 
 ```
 
-```{r} 
+```{r, av_ses_pe} 
 
-# This is modeling achievement for districts with average SES only
+# This is modeling achievement across the three states for districts with 
+# average SES only
 
 new_obs_mean <- tibble(sesavgall = 0.2053,
+                       
+                       # this is average SES
+                       
                       perell = .1,
-                      perspeced = .1
+                      perspeced = .01
                     )
 
 pe2_tx <- posterior_epred(fit_tx, newdata = new_obs_mean) %>% 
@@ -571,7 +560,7 @@ pe2_ma <- posterior_epred(fit_ma, newdata = new_obs_mean) %>%
   mutate_all(as.numeric) 
 ```
 
-```{r}
+```{r, av_ses_plot}
 # Plot for average SES across the three districts
 
 Texas_Mean <- pe2_tx$`1`
@@ -602,13 +591,16 @@ mean_ses_plot <- plot_data_2 %>%
   
 ```
 
-```{r} 
+```{r, high_ses_pe} 
 
 # This is modeling achievement for districts with high SES only
 
 new_obs_high <- tibble(sesavgall = 0.7831,
+                       
+                       # this is the highest quartile of SES
+                       
                       perell = .1,
-                      perspeced = .1)
+                      perspeced = .01)
 
 pe3_tx <- posterior_epred(fit_tx, newdata = new_obs_high) %>% 
   as_tibble() %>%
@@ -623,7 +615,7 @@ pe3_ma <- posterior_epred(fit_ma, newdata = new_obs_high) %>%
   mutate_all(as.numeric) 
 ```
 
-```{r}
+```{r, high_ses_plot}
 # Plot for high SES across the three districts
 
 Texas_High <- pe3_tx$`1`
@@ -654,7 +646,7 @@ high_ses_plot <- plot_data_3 %>%
   
 ```
 
-```{r}
+```{r, patchwork}
 # using patchwork - don't love how this looks though
 # ended up not incorporating this in my final app, but saving the code for future
 # reference
@@ -666,6 +658,5 @@ low_ses_plot + mean_ses_plot + high_ses_plot +
     subtitle = "Survey of a 2013 Kenyan Voter Registration Experiment
     \"local + SMS\" treatment shown:",
     caption = "Source: Kenya Voter Registration Experiment")
-
 
 ```
