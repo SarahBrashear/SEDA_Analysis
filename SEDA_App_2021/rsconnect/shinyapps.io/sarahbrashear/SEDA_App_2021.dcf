@@ -5,8 +5,8 @@ account: sarahbrashear
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 4058628
-bundleId: 4563557
+bundleId: 4570900
 url: https://sarahbrashear.shinyapps.io/SEDA_App_2021/
-when: 1620275215.26767
+when: 1620406253.61187
 asMultiple: FALSE
 asStatic: FALSE

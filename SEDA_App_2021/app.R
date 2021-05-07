@@ -195,7 +195,7 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                       us to compare student outcomes across time 
                                       and place in order to better understand and 
                                       explain the variance in student achievement.
-                                      Now more than ever,as districts across the 
+                                      Now more than ever, as districts across the 
                                       country prepare for a post-pandemic educational 
                                       landscape, it is imperative that education 
                                       leaders and policy-makers understand how 
@@ -363,10 +363,10 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                         # Again, loading in the images below
                                         # from the www folder.
                                         
-                                        h4("Visualizing the Differences Between 
+                                        h3("Visualizing the Differences Between 
                                            States"), 
                                         br(),
-                                        
+                                        br(),
                                         
                                         # The Average SES, Comparative Posterior
                                         img(src = "states_posterior.png", 
@@ -374,15 +374,34 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                             width = "100%",
                                             style = "display: block; margin-left: 
                                             auto; margin-right: auto;"),
-                                        
+                                        br(),
+                                        br(),
 
                                         p("As you can see, predicted achievement
                                           can vary considerably between states.
                                           Among the \"Big Three\" in education,
                                           it is likely that there is about", 
-                                          strong("half of a grade level of variation 
-                                          between predicted outcomes for students"), 
-                                          "in Texas compared to students in Massachusetts.")),
+                                          strong("20% (or 0.2) of a grade level 
+                                          of variation between predicted outcomes 
+                                          for students"), 
+                                          "in Texas compared to students in Massachusetts,
+                                          with California falling in the middle."),
+                                        br(),
+                                        p("While the differences in student outcomes
+                                          between states may appear to be small 
+                                          here, they are actually quite significant
+                                          in context. Over the course of a student's
+                                          12+ years in schools, small annual gains
+                                          accummulate and end up impacting what 
+                                          students do with the rest of their lives.
+                                          Because these small differences between
+                                          states are so substantively important,
+                                          future analyses ought to examine
+                                          where all 50 states fall in comparison
+                                          to each other, as well as how districts
+                                          compare within states.
+                                          "),
+                                        br())
                                 
                            ),
                            
@@ -401,22 +420,26 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                           I grouped districts by their states 
                                           since the majority of education policy 
                                           decision-making happens at the state 
-                                          level. In each state, I found a positive 
+                                          level. In each state, I found a", 
+                                         strong("positive 
                                           correlation between SES and student 
-                                          achievement; however, the magnitude of 
+                                          achievement;"),
+                                          "however, the magnitude of 
                                           correlations vary. I then built a 
-                                          predictive model that estimates that
-                                          students from a typical school 
+                                          predictive model that estimates that",
+                                         strong("students from a typical school 
                                           district will perform slightly above 
                                           grade-level on future assessments under 
-                                          a certain set of assumptions. Because 
+                                          a certain set of assumptions."),
+                                          "Because 
                                           I was interested in the variance between 
                                           states, I also analyzed the posterior
                                           distributions for three of the most 
-                                          influential states. Ultimately the variance 
+                                          influential states. Ultimately", 
+                                         strong("the variance 
                                           between these states could be used to 
-                                          inform policy decisions in the future 
-                                          as state education agencies strategically 
+                                          inform policy decisions in the future"),
+                                          "as state education agencies strategically 
                                           allocate funding and support for post-pandemic 
                                           recovery."), 
 
@@ -462,7 +485,9 @@ ui <- fluidPage(theme = shinytheme("sandstone"),
                                             "GitHub repository."), 
                                           "For more information about the data 
                                           itself, click the Data tab at the top 
-                                          of the page.")),
+                                          of the page."),
+                                        br()
+                                        ),
                                     
                                     # Here's the link to my Github repo, which 
                                     # is one of the required components of the 
